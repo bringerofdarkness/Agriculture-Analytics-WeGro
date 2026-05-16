@@ -1,10 +1,13 @@
 from fastapi import APIRouter
 
 from app.schemas.farm_reports import (
+    FarmLossAnalysisResponse,
     FarmSummaryResponse,
     SingleFarmPerformanceResponse,
     TopFarmsRankingResponse,
 )
+
+
 from app.schemas.filters import (
     CropCategoryFilter,
     FarmIdPath,
@@ -15,8 +18,10 @@ from app.schemas.filters import (
     YearFilter,
     LimitFilter,
     MetricFilter,
+    QualityGradeFilter,
 )
 from app.services.farm_reports import (
+    get_farm_loss_analysis,
     get_farm_summary,
     get_single_farm_performance,
     get_top_farms_ranking,
@@ -75,6 +80,35 @@ def read_single_farm_performance(
         crop_category=crop_category,
         market_type=market_type,
     )
+
+
+
+@router.get(
+    "/loss-analysis",
+    response_model=FarmLossAnalysisResponse,
+    summary="Loss Analysis",
+    description=(
+        "Shows post-harvest loss data broken down by region, crop category, "
+        "quality grade, and pesticide residue. Supports filtering by region, "
+        "year, season, quality_grade, and crop_category."
+    ),
+)
+def read_farm_loss_analysis(
+    region: RegionFilter = None,
+    year: YearFilter = None,
+    season: SeasonFilter = None,
+    quality_grade: QualityGradeFilter = None,
+    crop_category: CropCategoryFilter = None,
+) -> FarmLossAnalysisResponse:
+    return get_farm_loss_analysis(
+        region=region,
+        year=year,
+        season=season,
+        quality_grade=quality_grade,
+        crop_category=crop_category,
+    )
+
+
 
 @router.get(
     "/top",

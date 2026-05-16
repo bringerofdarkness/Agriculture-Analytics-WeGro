@@ -123,3 +123,51 @@ class TopFarmsRankingResponse(BaseModel):
             }
         }
     )
+
+
+class LossAnalysisSummary(BaseModel):
+    total_harvested_ton: float
+    total_lost_ton: float
+    overall_loss_pct: float
+
+
+class LossAnalysisBreakdownItem(BaseModel):
+    region: str
+    crop_category: str
+    quality_grade: str
+    total_lost_ton: float
+    loss_pct: float
+    pesticide_residue: str
+
+
+class FarmLossAnalysisResponse(BaseModel):
+    filters_applied: dict[str, Any]
+    summary: LossAnalysisSummary
+    breakdown: list[LossAnalysisBreakdownItem]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "filters_applied": {
+                    "season": "Kharif",
+                    "year": 2023,
+                    "quality_grade": "C",
+                },
+                "summary": {
+                    "total_harvested_ton": 1240.5,
+                    "total_lost_ton": 98.2,
+                    "overall_loss_pct": 7.9,
+                },
+                "breakdown": [
+                    {
+                        "region": "Chittagong",
+                        "crop_category": "Cereal",
+                        "quality_grade": "C",
+                        "total_lost_ton": 42.5,
+                        "loss_pct": 9.1,
+                        "pesticide_residue": "Trace",
+                    }
+                ],
+            }
+        }
+    )

@@ -6,11 +6,13 @@ from app.enums import (
     CropCategory,
     FarmType,
     MarketType,
+    QualityGrade,
     RankingMetric,
     Region,
     Season,
     Year,
 )
+
 from app.schemas.filters import build_filters_applied
 from app.services.data_loader import load_dim_farm, load_harvest_full
 from app.services.dataframe_utils import (
@@ -65,6 +67,16 @@ TOP_FARMS_REQUIRED_COLUMNS: set[str] = {
     "area_planted_ha",
 }
 
+LOSS_ANALYSIS_REQUIRED_COLUMNS: set[str] = {
+    "region",
+    "year",
+    "season",
+    "quality_grade",
+    "crop_category",
+    "quantity_harvested_ton",
+    "quantity_lost_ton",
+    "pesticide_residue",
+}
 
 def _add_loss_percentage(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -369,4 +381,112 @@ def get_top_farms_ranking(
             }
         ),
         "rankings": dataframe_to_records(ranking_df),
+    }
+
+def get_farm_loss_analysis(
+    *,
+    region: Optional[Region] = None,
+    year: Optional[Year] = None,
+    season: Optional[Season] = None,
+    quality_grade: Optional[QualityGrade] = None,
+    crop_category: Optional[CropCategory] = None,
+) -> dict[str, Any]:
+    """
+    Build the PRD response body for GET /farms/loss-analysis.
+
+    Supported PRD filters:
+        - region
+        - year
+        - season
+        - quality_grade
+        - crop_category
+    """
+    df = load_harvest_full()
+
+    validate_required_columns(df, LOSS_ANALYSIS_REQUIRED_COLUMNS)
+
+    filtered_df = apply_optional_filters(
+        df,
+        {
+            "region": region,
+            "year": year,
+            "season": season,
+            "quality_grade": quality_grade,
+            "crop_category": crop_category,
+        },
+    )
+
+    ensure_dataframe_not_empty(
+        filtered_df,
+        "No loss analysis data found for the requested filters.",
+    )
+
+    total_harvested_ton = float(filtered_df["quantity_harvested_ton"].sum())
+    total_lost_ton = float(filtered_df["quantity_lost_ton"].sum())
+
+    overall_loss_pct = (
+        (total_lost_ton / total_harvested_ton * 100)
+        if total_harvested_ton > 0
+        else 0.0
+    )
+
+    breakdown_df = (
+        filtered_df.groupby(
+            ["region", "crop_category", "quality_grade", "pesticide_residue"],
+            as_index=False,
+        )
+        .agg(
+            total_harvested_ton=("quantity_harvested_ton", "sum"),
+            total_lost_ton=("quantity_lost_ton", "sum"),
+        )
+        .reset_index(drop=True)
+    )
+
+    breakdown_df["loss_pct"] = 0.0
+
+    valid_harvest_mask = breakdown_df["total_harvested_ton"].gt(0)
+
+    breakdown_df.loc[valid_harvest_mask, "loss_pct"] = (
+        breakdown_df.loc[valid_harvest_mask, "total_lost_ton"]
+        / breakdown_df.loc[valid_harvest_mask, "total_harvested_ton"]
+        * 100
+    )
+
+    breakdown_df = breakdown_df[
+        [
+            "region",
+            "crop_category",
+            "quality_grade",
+            "total_lost_ton",
+            "loss_pct",
+            "pesticide_residue",
+        ]
+    ]
+
+    breakdown_df = (
+        breakdown_df.sort_values(
+            by=["loss_pct", "total_lost_ton", "region"],
+            ascending=[False, False, True],
+        )
+        .reset_index(drop=True)
+    )
+
+    breakdown_df = round_numeric_columns(breakdown_df, decimals=2)
+
+    return {
+        "filters_applied": build_filters_applied(
+            {
+                "region": region,
+                "year": year,
+                "season": season,
+                "quality_grade": quality_grade,
+                "crop_category": crop_category,
+            }
+        ),
+        "summary": {
+            "total_harvested_ton": round(total_harvested_ton, 2),
+            "total_lost_ton": round(total_lost_ton, 2),
+            "overall_loss_pct": round(overall_loss_pct, 2),
+        },
+        "breakdown": dataframe_to_records(breakdown_df),
     }

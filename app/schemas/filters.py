@@ -21,82 +21,82 @@ from app.enums import (
 
 RegionFilter = Annotated[
     Optional[Region],
-    Query(default=None, description="Filter by region."),
+    Query(description="Filter by region."),
 ]
 
 FarmTypeFilter = Annotated[
     Optional[FarmType],
-    Query(default=None, description="Filter by farm type."),
+    Query(description="Filter by farm type."),
 ]
 
 YearFilter = Annotated[
     Optional[Year],
-    Query(default=None, description="Filter by year."),
+    Query(description="Filter by year."),
 ]
 
 SeasonFilter = Annotated[
     Optional[Season],
-    Query(default=None, description="Filter by season."),
+    Query(description="Filter by season."),
 ]
 
 CropCategoryFilter = Annotated[
     Optional[CropCategory],
-    Query(default=None, description="Filter by crop category."),
+    Query(description="Filter by crop category."),
 ]
 
 MarketTypeFilter = Annotated[
     Optional[MarketType],
-    Query(default=None, description="Filter by market type."),
+    Query(description="Filter by market type."),
 ]
 
 QualityGradeFilter = Annotated[
     Optional[QualityGrade],
-    Query(default=None, description="Filter by quality grade."),
+    Query(description="Filter by quality grade."),
 ]
 
 PriceTierFilter = Annotated[
     Optional[PriceTier],
-    Query(default=None, description="Filter by price tier."),
+    Query(description="Filter by price tier."),
 ]
 
 PesticideResidueFilter = Annotated[
     Optional[PesticideResidue],
-    Query(default=None, description="Filter by pesticide residue level."),
+    Query(description="Filter by pesticide residue level."),
 ]
 
 WaterRequirementFilter = Annotated[
     Optional[WaterRequirement],
-    Query(default=None, description="Filter by water requirement."),
+    Query(description="Filter by water requirement."),
 ]
 
 QuarterFilter = Annotated[
     Optional[Quarter],
-    Query(default=None, description="Filter by quarter. Accepted values: 1, 2, 3, 4."),
+    Query(description="Filter by quarter. Accepted values: 1, 2, 3, 4."),
 ]
 
 CropNameFilter = Annotated[
     Optional[str],
-    Query(default=None, min_length=1, description="Filter by crop name."),
+    Query(min_length=1, description="Filter by crop name."),
 ]
 
 DistrictFilter = Annotated[
     Optional[str],
-    Query(default=None, min_length=1, description="Filter by district."),
+    Query(min_length=1, description="Filter by district."),
 ]
 
 CropIdFilter = Annotated[
     Optional[int],
-    Query(default=None, ge=1, description="Filter by crop ID."),
+    Query(ge=1, description="Filter by crop ID."),
 ]
 
 MetricFilter = Annotated[
     RankingMetric,
-    Query(default=RankingMetric.PROFIT, description="Ranking metric."),
+    Query(description="Ranking metric."),
 ]
 
 LimitFilter = Annotated[
     int,
-    Query(default=10, ge=1, description="Any positive integer. Default: 10."),
+    Query(ge=1, description="Any positive integer. Default: 10."),
 ]
 
 FarmIdPath = Annotated[

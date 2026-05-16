@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.database import dispose_engine
 from app.exceptions import DataNotFoundError
+from app.routers import farms_router
 
 
 settings = get_settings()
@@ -35,3 +36,6 @@ async def data_not_found_exception_handler(
         status_code=404,
         content={"detail": exc.message},
     )
+
+
+app.include_router(farms_router)

@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.schemas.farm_reports import (
     FarmSummaryResponse,
     SingleFarmPerformanceResponse,
+    TopFarmsRankingResponse,
 )
 from app.schemas.filters import (
     CropCategoryFilter,
@@ -12,8 +13,14 @@ from app.schemas.filters import (
     RegionFilter,
     SeasonFilter,
     YearFilter,
+    LimitFilter,
+    MetricFilter,
 )
-from app.services.farm_reports import get_farm_summary, get_single_farm_performance
+from app.services.farm_reports import (
+    get_farm_summary,
+    get_single_farm_performance,
+    get_top_farms_ranking,
+)
 
 
 router = APIRouter(
@@ -67,4 +74,28 @@ def read_single_farm_performance(
         year=year,
         crop_category=crop_category,
         market_type=market_type,
+    )
+
+@router.get(
+    "/top",
+    response_model=TopFarmsRankingResponse,
+    summary="Top Farms Ranking",
+    description=(
+        "Returns the top N farms ranked by profit, revenue, or yield. "
+        "Supports filtering by region, farm_type, and year."
+    ),
+)
+def read_top_farms_ranking(
+    metric: MetricFilter = "profit",
+    region: RegionFilter = None,
+    farm_type: FarmTypeFilter = None,
+    year: YearFilter = None,
+    limit: LimitFilter = 10,
+) -> TopFarmsRankingResponse:
+    return get_top_farms_ranking(
+        metric=metric,
+        region=region,
+        farm_type=farm_type,
+        year=year,
+        limit=limit,
     )

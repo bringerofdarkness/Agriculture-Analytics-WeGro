@@ -17,7 +17,11 @@ from app.services.dataframe_utils import (
     round_numeric_columns,
     validate_required_columns,
 )
-from app.services.farm_reports import get_farm_summary, get_single_farm_performance
+from app.services.farm_reports import (
+    get_farm_summary,
+    get_single_farm_performance,
+    get_top_farms_ranking,
+)
 
 __all__ = [
     "DatabaseTable",
@@ -27,6 +31,7 @@ __all__ = [
     "ensure_dataframe_not_empty",
     "get_farm_summary",
     "get_single_farm_performance",
+    "get_top_farms_ranking",
     "load_dim_farm",
     "load_farm_profitability",
     "load_harvest_full",

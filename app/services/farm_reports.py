@@ -2,7 +2,15 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from app.enums import CropCategory, FarmType, MarketType, Region, Season, Year
+from app.enums import (
+    CropCategory,
+    FarmType,
+    MarketType,
+    RankingMetric,
+    Region,
+    Season,
+    Year,
+)
 from app.schemas.filters import build_filters_applied
 from app.services.data_loader import load_dim_farm, load_harvest_full
 from app.services.dataframe_utils import (
@@ -46,6 +54,17 @@ SINGLE_FARM_PERFORMANCE_REQUIRED_COLUMNS: set[str] = {
     "quality_grade",
 }
 
+TOP_FARMS_REQUIRED_COLUMNS: set[str] = {
+    "farm_name",
+    "region",
+    "farm_type",
+    "year",
+    "revenue_bdt",
+    "net_profit_bdt",
+    "quantity_harvested_ton",
+    "area_planted_ha",
+}
+
 
 def _add_loss_percentage(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -66,6 +85,29 @@ def _add_loss_percentage(df: pd.DataFrame) -> pd.DataFrame:
         result.loc[valid_harvest_mask, "quantity_lost_ton"]
         / result.loc[valid_harvest_mask, "quantity_harvested_ton"]
         * 100
+    )
+
+    return result
+
+
+def _add_yield_per_hectare(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add yield per hectare for internal farm ranking.
+
+    Formula:
+        quantity_harvested_ton / area_planted_ha
+
+    Zero-area rows are safely handled as 0.0 yield.
+    """
+    result = df.copy()
+
+    result["yield_ton_per_ha"] = 0.0
+
+    valid_area_mask = result["area_planted_ha"].gt(0)
+
+    result.loc[valid_area_mask, "yield_ton_per_ha"] = (
+        result.loc[valid_area_mask, "quantity_harvested_ton"]
+        / result.loc[valid_area_mask, "area_planted_ha"]
     )
 
     return result
@@ -235,4 +277,96 @@ def get_single_farm_performance(
             }
         ),
         "performance": dataframe_to_records(performance_df),
+    }
+
+
+def get_top_farms_ranking(
+    *,
+    metric: RankingMetric = RankingMetric.PROFIT,
+    region: Optional[Region] = None,
+    farm_type: Optional[FarmType] = None,
+    year: Optional[Year] = None,
+    limit: int = 10,
+) -> dict[str, Any]:
+    """
+    Build the PRD response body for GET /farms/top.
+
+    Supported PRD filters:
+        - metric
+        - region
+        - farm_type
+        - year
+        - limit
+    """
+    df = load_harvest_full()
+
+    validate_required_columns(df, TOP_FARMS_REQUIRED_COLUMNS)
+
+    filtered_df = apply_optional_filters(
+        df,
+        {
+            "region": region,
+            "farm_type": farm_type,
+            "year": year,
+        },
+    )
+
+    ensure_dataframe_not_empty(
+        filtered_df,
+        "No farm ranking data found for the requested filters.",
+    )
+
+    filtered_df = _add_yield_per_hectare(filtered_df)
+
+    ranking_df = (
+        filtered_df.groupby(["farm_name", "region", "farm_type"], as_index=False)
+        .agg(
+            net_profit_bdt=("net_profit_bdt", "sum"),
+            total_revenue_bdt=("revenue_bdt", "sum"),
+            yield_ton_per_ha=("yield_ton_per_ha", "mean"),
+        )
+        .reset_index(drop=True)
+    )
+
+    metric_sort_column = {
+        RankingMetric.PROFIT: "net_profit_bdt",
+        RankingMetric.REVENUE: "total_revenue_bdt",
+        RankingMetric.YIELD: "yield_ton_per_ha",
+    }[metric]
+
+    ranking_df = (
+        ranking_df.sort_values(
+            by=[metric_sort_column, "farm_name"],
+            ascending=[False, True],
+        )
+        .head(limit)
+        .reset_index(drop=True)
+    )
+
+    ranking_df.insert(0, "rank", ranking_df.index + 1)
+
+    ranking_df = ranking_df[
+        [
+            "rank",
+            "farm_name",
+            "region",
+            "farm_type",
+            "net_profit_bdt",
+            "total_revenue_bdt",
+        ]
+    ]
+
+    ranking_df = round_numeric_columns(ranking_df, decimals=2)
+
+    return {
+        "metric": metric.value,
+        "filters_applied": build_filters_applied(
+            {
+                "region": region,
+                "farm_type": farm_type,
+                "year": year,
+                "limit": limit,
+            }
+        ),
+        "rankings": dataframe_to_records(ranking_df),
     }

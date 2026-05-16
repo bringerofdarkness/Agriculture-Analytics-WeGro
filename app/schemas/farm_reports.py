@@ -85,3 +85,41 @@ class SingleFarmPerformanceResponse(BaseModel):
             }
         }
     )
+
+
+class TopFarmRankingItem(BaseModel):
+    rank: int
+    farm_name: str
+    region: str
+    farm_type: str
+    net_profit_bdt: float
+    total_revenue_bdt: float
+
+
+class TopFarmsRankingResponse(BaseModel):
+    metric: str
+    filters_applied: dict[str, Any]
+    rankings: list[TopFarmRankingItem]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "metric": "profit",
+                "filters_applied": {
+                    "region": "Rajshahi",
+                    "farm_type": "Commercial",
+                    "limit": 5,
+                },
+                "rankings": [
+                    {
+                        "rank": 1,
+                        "farm_name": "Barind Farms",
+                        "region": "Rajshahi",
+                        "farm_type": "Commercial",
+                        "net_profit_bdt": 8900000,
+                        "total_revenue_bdt": 11200000,
+                    }
+                ],
+            }
+        }
+    )

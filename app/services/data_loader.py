@@ -17,33 +17,57 @@ class DatabaseView(str, Enum):
     FARM_PROFITABILITY = "vw_farm_profitability"
 
 
+class DatabaseTable(str, Enum):
+    """
+    PRD dimension tables required when a view does not expose needed keys.
+    """
+
+    DIM_FARM = "dim_farm"
+
+
 ALLOWED_VIEWS: Final[set[str]] = {view.value for view in DatabaseView}
+ALLOWED_TABLES: Final[set[str]] = {table.value for table in DatabaseTable}
+ALLOWED_READ_SOURCES: Final[set[str]] = ALLOWED_VIEWS | ALLOWED_TABLES
 
 
-def validate_view_name(view_name: str) -> None:
+def validate_read_source_name(source_name: str) -> None:
     """
     Guard against unsafe or unsupported table/view access.
 
-    We never interpolate user-controlled table names unless they are explicitly
+    We never interpolate dynamic table names unless they are explicitly
     allowlisted.
     """
-    if view_name not in ALLOWED_VIEWS:
-        allowed = ", ".join(sorted(ALLOWED_VIEWS))
-        raise ValueError(f"Unsupported database view '{view_name}'. Allowed: {allowed}")
+    if source_name not in ALLOWED_READ_SOURCES:
+        allowed = ", ".join(sorted(ALLOWED_READ_SOURCES))
+        raise ValueError(
+            f"Unsupported database read source '{source_name}'. Allowed: {allowed}"
+        )
+
+
+def load_source_as_dataframe(source_name: str) -> pd.DataFrame:
+    """
+    Load an allowlisted database table or view into a pandas DataFrame.
+    """
+    validate_read_source_name(source_name)
+
+    query = text(f"SELECT * FROM {source_name}")
+
+    with get_connection() as connection:
+        return pd.read_sql(query, connection)
 
 
 def load_view_as_dataframe(view: DatabaseView) -> pd.DataFrame:
     """
     Load a full PRD-approved database view into a pandas DataFrame.
-
-    This is the foundation for endpoint-level pandas transformations.
     """
-    validate_view_name(view.value)
+    return load_source_as_dataframe(view.value)
 
-    query = text(f"SELECT * FROM {view.value}")
 
-    with get_connection() as connection:
-        return pd.read_sql(query, connection)
+def load_table_as_dataframe(table: DatabaseTable) -> pd.DataFrame:
+    """
+    Load a PRD-approved dimension table into a pandas DataFrame.
+    """
+    return load_source_as_dataframe(table.value)
 
 
 def load_harvest_full() -> pd.DataFrame:
@@ -56,3 +80,7 @@ def load_revenue_by_crop_year() -> pd.DataFrame:
 
 def load_farm_profitability() -> pd.DataFrame:
     return load_view_as_dataframe(DatabaseView.FARM_PROFITABILITY)
+
+
+def load_dim_farm() -> pd.DataFrame:
+    return load_table_as_dataframe(DatabaseTable.DIM_FARM)

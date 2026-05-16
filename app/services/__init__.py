@@ -1,8 +1,12 @@
 from app.services.data_loader import (
+    DatabaseTable,
     DatabaseView,
+    load_dim_farm,
     load_farm_profitability,
     load_harvest_full,
     load_revenue_by_crop_year,
+    load_source_as_dataframe,
+    load_table_as_dataframe,
     load_view_as_dataframe,
 )
 from app.services.dataframe_utils import (
@@ -16,14 +20,18 @@ from app.services.dataframe_utils import (
 from app.services.farm_reports import get_farm_summary
 
 __all__ = [
+    "DatabaseTable",
     "DatabaseView",
     "apply_optional_filters",
     "dataframe_to_records",
     "ensure_dataframe_not_empty",
     "get_farm_summary",
+    "load_dim_farm",
     "load_farm_profitability",
     "load_harvest_full",
     "load_revenue_by_crop_year",
+    "load_source_as_dataframe",
+    "load_table_as_dataframe",
     "load_view_as_dataframe",
     "normalize_filter_value",
     "round_numeric_columns",

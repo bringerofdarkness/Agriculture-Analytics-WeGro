@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.database import dispose_engine
 from app.exceptions import DataNotFoundError
-from app.routers import farms_router
+from app.routers import crops_router, farms_router
 
 
 settings = get_settings()
@@ -39,3 +39,4 @@ async def data_not_found_exception_handler(
 
 
 app.include_router(farms_router)
+app.include_router(crops_router)

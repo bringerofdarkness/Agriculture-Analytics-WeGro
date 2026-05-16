@@ -40,3 +40,48 @@ class FarmSummaryResponse(BaseModel):
             }
         }
     )
+
+
+class SingleFarmPerformanceItem(BaseModel):
+    crop_name: str
+    year: int
+    market_type: str
+    quantity_sold_ton: float
+    revenue_bdt: float
+    net_profit_bdt: float
+    quality_grade: str
+
+
+class SingleFarmPerformanceResponse(BaseModel):
+    farm_id: int
+    farm_name: str
+    owner: str
+    region: str
+    filters_applied: dict[str, Any]
+    performance: list[SingleFarmPerformanceItem]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "farm_id": 1,
+                "farm_name": "Green Valley Farm",
+                "owner": "Rahman Ali",
+                "region": "Dhaka",
+                "filters_applied": {
+                    "year": 2023,
+                    "crop_category": "Cereal",
+                },
+                "performance": [
+                    {
+                        "crop_name": "Boro Rice",
+                        "year": 2023,
+                        "market_type": "Wholesale",
+                        "quantity_sold_ton": 60.0,
+                        "revenue_bdt": 1560000,
+                        "net_profit_bdt": 1180000,
+                        "quality_grade": "A",
+                    }
+                ],
+            }
+        }
+    )

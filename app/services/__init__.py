@@ -13,12 +13,14 @@ from app.services.dataframe_utils import (
     round_numeric_columns,
     validate_required_columns,
 )
+from app.services.farm_reports import get_farm_summary
 
 __all__ = [
     "DatabaseView",
     "apply_optional_filters",
     "dataframe_to_records",
     "ensure_dataframe_not_empty",
+    "get_farm_summary",
     "load_farm_profitability",
     "load_harvest_full",
     "load_revenue_by_crop_year",

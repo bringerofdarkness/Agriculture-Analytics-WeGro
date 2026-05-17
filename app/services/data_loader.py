@@ -24,6 +24,7 @@ class DatabaseTable(str, Enum):
 
     DIM_FARM = "dim_farm"
     DIM_CROP = "dim_crop"
+    DIM_MARKET = "dim_market"
 
 
 ALLOWED_VIEWS: Final[set[str]] = {view.value for view in DatabaseView}
@@ -82,9 +83,14 @@ def load_revenue_by_crop_year() -> pd.DataFrame:
 def load_farm_profitability() -> pd.DataFrame:
     return load_view_as_dataframe(DatabaseView.FARM_PROFITABILITY)
 
+
 def load_dim_farm() -> pd.DataFrame:
     return load_table_as_dataframe(DatabaseTable.DIM_FARM)
 
 
 def load_dim_crop() -> pd.DataFrame:
     return load_table_as_dataframe(DatabaseTable.DIM_CROP)
+
+
+def load_dim_market() -> pd.DataFrame:
+    return load_table_as_dataframe(DatabaseTable.DIM_MARKET)

@@ -1,4 +1,8 @@
-from app.services.crop_reports import get_crop_yield_efficiency
+from app.services.crop_reports import (
+    get_crop_seasonal_trend,
+    get_crop_yield_efficiency,
+)
+
 from app.services.data_loader import (
     DatabaseTable,
     DatabaseView,
@@ -33,6 +37,7 @@ __all__ = [
     "dataframe_to_records",
     "ensure_dataframe_not_empty",
     "get_crop_yield_efficiency",
+    "get_crop_seasonal_trend",
     "get_farm_loss_analysis",
     "get_farm_summary",
     "get_single_farm_performance",

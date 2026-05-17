@@ -1,6 +1,14 @@
 from typing import Any, Optional
 
-from app.enums import CropCategory, Region, Season, WaterRequirement, Year
+from app.enums import (
+    CropCategory,
+    MarketType,
+    Quarter,
+    Region,
+    Season,
+    WaterRequirement,
+    Year,
+)
 from app.schemas.filters import build_filters_applied
 from app.services.data_loader import load_dim_crop, load_harvest_full
 from app.services.dataframe_utils import (
@@ -22,12 +30,17 @@ YIELD_EFFICIENCY_HARVEST_REQUIRED_COLUMNS: set[str] = {
     "quantity_harvested_ton",
 }
 
-YIELD_EFFICIENCY_CROP_REQUIRED_COLUMNS: set[str] = {
+SEASONAL_TREND_REQUIRED_COLUMNS: set[str] = {
     "crop_name",
     "crop_category",
-    "growing_season",
-    "avg_yield_ton_per_ha",
-    "water_requirement",
+    "year",
+    "quarter",
+    "season",
+    "market_type",
+    "quantity_sold_ton",
+    "revenue_bdt",
+    "price_per_ton_bdt",
+    "harvest_id",
 }
 
 
@@ -157,4 +170,79 @@ def get_crop_yield_efficiency(
             }
         ),
         "data": dataframe_to_records(efficiency_df),
+    }
+
+def get_crop_seasonal_trend(
+    *,
+    crop_name: Optional[str] = None,
+    crop_category: Optional[CropCategory] = None,
+    year: Optional[Year] = None,
+    quarter: Optional[Quarter] = None,
+    market_type: Optional[MarketType] = None,
+) -> dict[str, Any]:
+    """
+    Build the PRD response body for GET /crops/seasonal-trend.
+
+    Supported PRD filters:
+        - crop_name
+        - crop_category
+        - year
+        - quarter
+        - market_type
+
+    Notes:
+        This endpoint uses harvest/calendar season from vw_harvest_full.season,
+        not dim_crop.growing_season.
+    """
+    df = load_harvest_full()
+
+    validate_required_columns(df, SEASONAL_TREND_REQUIRED_COLUMNS)
+
+    filtered_df = apply_optional_filters(
+        df,
+        {
+            "crop_name": crop_name,
+            "crop_category": crop_category,
+            "year": year,
+            "quarter": quarter,
+            "market_type": market_type,
+        },
+    )
+
+    ensure_dataframe_not_empty(
+        filtered_df,
+        "No seasonal trend data found for the requested filters.",
+    )
+
+    trend_df = (
+        filtered_df.groupby(
+            ["crop_name", "year", "quarter", "season"],
+            as_index=False,
+        )
+        .agg(
+            total_quantity_sold_ton=("quantity_sold_ton", "sum"),
+            total_revenue_bdt=("revenue_bdt", "sum"),
+            avg_price_per_ton_bdt=("price_per_ton_bdt", "mean"),
+            num_harvests=("harvest_id", "nunique"),
+        )
+        .sort_values(
+            by=["year", "quarter", "crop_name"],
+            ascending=[True, True, True],
+        )
+        .reset_index(drop=True)
+    )
+
+    trend_df = round_numeric_columns(trend_df, decimals=2)
+
+    return {
+        "filters_applied": build_filters_applied(
+            {
+                "crop_name": crop_name,
+                "crop_category": crop_category,
+                "year": year,
+                "quarter": quarter,
+                "market_type": market_type,
+            }
+        ),
+        "trend": dataframe_to_records(trend_df),
     }

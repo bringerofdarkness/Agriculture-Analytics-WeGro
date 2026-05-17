@@ -1,4 +1,5 @@
 from app.services.crop_reports import (
+    get_crop_quality_breakdown,
     get_crop_seasonal_trend,
     get_crop_yield_efficiency,
 )
@@ -40,6 +41,7 @@ __all__ = [
     "ensure_dataframe_not_empty",
     "get_crop_seasonal_trend",
     "get_crop_yield_efficiency",
+    "get_crop_quality_breakdown",
     "get_farm_loss_analysis",
     "get_farm_summary",
     "get_market_price_comparison",

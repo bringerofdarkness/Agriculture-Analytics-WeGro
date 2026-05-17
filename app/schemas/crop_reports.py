@@ -76,3 +76,71 @@ class CropSeasonalTrendResponse(BaseModel):
             }
         }
     )
+
+
+class QualityMetric(BaseModel):
+    count: int
+    pct: float
+
+
+class QualityGradeMetric(QualityMetric):
+    avg_revenue_bdt: float
+
+
+class CropQualityBreakdownResponse(BaseModel):
+    filters_applied: dict[str, Any]
+    total_records: int
+    grade_distribution: dict[str, QualityGradeMetric]
+    pesticide_residue_breakdown: dict[str, QualityMetric]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "filters_applied": {
+                    "crop_category": "Vegetable",
+                    "year": 2023,
+                },
+                "total_records": 13,
+                "grade_distribution": {
+                    "A": {
+                        "count": 10,
+                        "pct": 76.92,
+                        "avg_revenue_bdt": 3274975.0,
+                    },
+                    "B": {
+                        "count": 3,
+                        "pct": 23.08,
+                        "avg_revenue_bdt": 3121833.33,
+                    },
+                    "C": {
+                        "count": 0,
+                        "pct": 0.0,
+                        "avg_revenue_bdt": 0.0,
+                    },
+                    "D": {
+                        "count": 0,
+                        "pct": 0.0,
+                        "avg_revenue_bdt": 0.0,
+                    },
+                },
+                "pesticide_residue_breakdown": {
+                    "None": {
+                        "count": 9,
+                        "pct": 69.23,
+                    },
+                    "Trace": {
+                        "count": 4,
+                        "pct": 30.77,
+                    },
+                    "Low": {
+                        "count": 0,
+                        "pct": 0.0,
+                    },
+                    "High": {
+                        "count": 0,
+                        "pct": 0.0,
+                    },
+                },
+            }
+        }
+    )

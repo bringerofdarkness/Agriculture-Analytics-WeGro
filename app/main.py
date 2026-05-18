@@ -31,6 +31,18 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan,
 )
+@app.get(
+    "/health",
+    tags=["System"],
+    summary="Health Check",
+    description="Returns a lightweight application health status for local and Docker runtime checks.",
+)
+def health_check() -> dict[str, str]:
+    return {
+        "status": "healthy",
+        "service": "wegro-agriculture-api",
+        "version": "1.0.0",
+    }
 
 # Enable CORS for frontend integrations and cross-origin assessment tools
 app.add_middleware(

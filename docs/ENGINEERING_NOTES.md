@@ -1,4 +1,4 @@
-# Project Reference — WeGro Agriculture Analytics API
+# Project Reference - WeGro Agriculture Analytics API
 
 This document is the internal technical reference for the WeGro Agriculture Analytics API.
 
@@ -34,7 +34,7 @@ Transform agriculture database records into clean, filterable analytics endpoint
 The project behaves like a small data product:
 
 ```text
-database → pandas analytics → validated API responses → recruiter-testable endpoints
+database -> pandas analytics -> validated API responses -> recruiter-testable endpoints
 ```
 
 ---
@@ -291,9 +291,9 @@ The project mainly uses analytical views, but dimension tables are used when end
 Examples:
 
 ```text
-dim_farm → farm_id validation
-dim_crop → crop_id, benchmark yield, growing season
-dim_market → market district and price tier
+dim_farm -> farm_id validation
+dim_crop -> crop_id, benchmark yield, growing season
+dim_market -> market district and price tier
 ```
 
 Reason:
@@ -655,34 +655,32 @@ docs/README.md
 Documentation index.
 
 ```text
-docs/ARCHITECTURE.md
+docs/SYSTEM_BLUEPRINT.md
 ```
 
 System architecture and request lifecycle.
 
 ```text
-docs/API_REFERENCE.md
+docs/API_PLAYBOOK.md
 ```
 
 Endpoint-by-endpoint API guide.
 
 ```text
-docs/DATA_GUIDE.md
+docs/DATA_STORY.md
 ```
 
 Data story, lineage, and pandas transformation notes.
 
 ```text
-docs/PROJECT_REFERENCE.md
+docs/ENGINEERING_NOTES.md
 ```
 
 Engineering decisions and reviewer notes.
 
 ```text
-docs/SUBMISSION_CHECKLIST.md
 ```
 
-Final readiness checklist.
 
 This keeps the root README readable while still giving evaluators deeper technical context.
 
@@ -701,7 +699,7 @@ A reviewer can evaluate the project in this order:
 6. Test the 8 endpoints.
 7. Run python scripts/check_api_endpoints.py.
 8. Build and run Docker image.
-9. Review docs/ARCHITECTURE.md and docs/API_REFERENCE.md.
+9. Review docs/SYSTEM_BLUEPRINT.md and docs/API_PLAYBOOK.md.
 10. Check notebooks/01_comprehensive_eda.ipynb for EDA context.
 ```
 

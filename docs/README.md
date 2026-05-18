@@ -1,9 +1,9 @@
-# WeGro Agriculture Analytics API — Documentation
+# WeGro Agriculture Analytics API - Documentation
 
 This folder contains supporting documentation for the **WeGro Agriculture Analytics API**, built for the WeGro Technologies Limited Associate Data Scientist Technical Assessment.
 
 The root `README.md` explains how to install, run, test, and use the API.  
-The files in this `docs/` folder provide deeper technical details about the architecture, API endpoints, data sources, implementation choices, and final submission checklist.
+The files in this `docs/` folder provide deeper technical details about the system design, endpoint behavior, data flow, and implementation decisions behind the API.
 
 ---
 
@@ -12,11 +12,10 @@ The files in this `docs/` folder provide deeper technical details about the arch
 | Document | Purpose |
 |---|---|
 | [`../README.md`](../README.md) | Main project guide: setup, Docker, endpoints, testing, and usage |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Layered backend architecture, request flow, Docker runtime, and EDA separation |
-| [`API_REFERENCE.md`](API_REFERENCE.md) | Endpoint-by-endpoint API reference for all 8 required PRD endpoints |
-| [`DATA_GUIDE.md`](DATA_GUIDE.md) | Database views, dimension tables, pandas usage, and EDA notebook context |
-| [`PROJECT_REFERENCE.md`](PROJECT_REFERENCE.md) | Project objective, implementation decisions, validation logic, and delivery notes |
-| [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) | Final recruiter-facing checklist before submission |
+| [`SYSTEM_BLUEPRINT.md`](SYSTEM_BLUEPRINT.md) | Layered backend architecture, request flow, Docker runtime, and EDA separation |
+| [`API_PLAYBOOK.md`](API_PLAYBOOK.md) | Endpoint-by-endpoint API reference for all 8 required PRD endpoints |
+| [`DATA_STORY.md`](DATA_STORY.md) | Database views, dimension tables, pandas usage, and EDA notebook context |
+| [`ENGINEERING_NOTES.md`](ENGINEERING_NOTES.md) | Project objective, implementation decisions, validation logic, and delivery notes |
 
 ---
 
@@ -74,14 +73,14 @@ It illustrates the main request flow:
 
 ```text
 External Client
-→ FastAPI Application
-→ Router Layer
-→ Validation & Schema Layer
-→ Service Layer
-→ Shared pandas Utilities
-→ Data Access Layer
-→ SQLAlchemy + PyMySQL
-→ Remote MySQL Database
+-> FastAPI Application
+-> Router Layer
+-> Validation & Schema Layer
+-> Service Layer
+-> Shared pandas Utilities
+-> Data Access Layer
+-> SQLAlchemy + PyMySQL
+-> Remote MySQL Database
 ```
 
 ---

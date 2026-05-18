@@ -30,7 +30,6 @@ The project focuses on correctness, clean architecture, recruiter-friendly docum
 - [Testing](#testing)
 - [Error Handling](#error-handling)
 - [Implementation Notes](#implementation-notes)
-- [Final Submission Checklist](#final-submission-checklist)
 
 ---
 
@@ -1163,26 +1162,6 @@ The Dockerfile uses a multi-stage build:
 3. The container runs with a non-root `appuser`.
 
 This keeps the final image cleaner and safer than a single-stage build.
-
----
-
-## Final Submission Checklist
-
-Before submitting the GitHub repository:
-
-- [ ] All 8 endpoints return successful responses
-- [ ] Invalid filters return 422
-- [ ] Valid filters with no matching rows return 404
-- [ ] `python -m compileall app scripts` passes
-- [ ] `python scripts/check_api_endpoints.py` passes
-- [ ] `requirements.txt` is present
-- [ ] `README.md` explains how to run locally
-- [ ] `Dockerfile` is present
-- [ ] Docker image builds successfully
-- [ ] Docker container runs successfully
-- [ ] `.env` is not committed
-- [ ] Git working tree is clean
-- [ ] Repository is public before submission
 
 ---
 

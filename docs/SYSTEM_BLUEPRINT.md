@@ -1,4 +1,4 @@
-# WeGro Agriculture Analytics API — Architecture
+# WeGro Agriculture Analytics API - Architecture
 
 This document explains the backend architecture of the **WeGro Agriculture Analytics API**, built for the WeGro Technologies Limited Associate Data Scientist Technical Assessment.
 
@@ -12,15 +12,15 @@ The project follows a layered backend architecture:
 
 ```text
 External Client
-→ FastAPI Application Entry
-→ Router Layer
-→ Validation & Schema Layer
-→ Service Layer
-→ Shared pandas Utility Layer
-→ Data Access Layer
-→ SQLAlchemy + PyMySQL
-→ Remote MySQL Database
-→ JSON Response
+-> FastAPI Application Entry
+-> Router Layer
+-> Validation & Schema Layer
+-> Service Layer
+-> Shared pandas Utility Layer
+-> Data Access Layer
+-> SQLAlchemy + PyMySQL
+-> Remote MySQL Database
+-> JSON Response
 ```
 
 This structure separates API routing, validation, analytics logic, utility functions, and database access into different modules.
@@ -356,11 +356,11 @@ Correct data access flow:
 
 ```text
 Service Layer
-→ data_loader.py
-→ database.py
-→ SQLAlchemy Engine
-→ PyMySQL Driver
-→ Remote MySQL Database
+-> data_loader.py
+-> database.py
+-> SQLAlchemy Engine
+-> PyMySQL Driver
+-> Remote MySQL Database
 ```
 
 The data loader does not bypass SQLAlchemy.  
@@ -472,11 +472,11 @@ Runtime flow:
 
 ```text
 Host Machine
-→ Docker Container
-→ FastAPI + Uvicorn
-→ Application Code
-→ SQLAlchemy + PyMySQL
-→ Remote MySQL Database
+-> Docker Container
+-> FastAPI + Uvicorn
+-> Application Code
+-> SQLAlchemy + PyMySQL
+-> Remote MySQL Database
 ```
 
 The Docker image contains:
@@ -634,17 +634,17 @@ Notebook separated from API runtime
 
 ```text
 User Action
-→ External Client
-→ FastAPI Application
-→ Router
-→ Validation & Schema
-→ Service Logic
-→ Shared pandas Utilities
-→ Data Loader
-→ SQLAlchemy Engine
-→ PyMySQL Driver
-→ Remote MySQL Database
-→ JSON Response
+-> External Client
+-> FastAPI Application
+-> Router
+-> Validation & Schema
+-> Service Logic
+-> Shared pandas Utilities
+-> Data Loader
+-> SQLAlchemy Engine
+-> PyMySQL Driver
+-> Remote MySQL Database
+-> JSON Response
 ```
 
 This structure makes the project clean, testable, maintainable, and suitable for recruiter review.

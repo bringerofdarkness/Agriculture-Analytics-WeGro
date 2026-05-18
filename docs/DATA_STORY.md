@@ -6,10 +6,10 @@ Instead of only listing database tables, this guide explains the data journey:
 
 ```text
 Raw database records
-→ analytical views
-→ pandas DataFrames
-→ service-level transformations
-→ validated API responses
+-> analytical views
+-> pandas DataFrames
+-> service-level transformations
+-> validated API responses
 ```
 
 The goal is to show how the project thinks like a data product, not only like a backend API.
@@ -65,12 +65,12 @@ The intended flow is:
 
 ```text
 analytics service
-→ data_loader.py
-→ database.py
-→ SQLAlchemy engine
-→ PyMySQL driver
-→ remote MySQL
-→ pandas DataFrame
+-> data_loader.py
+-> database.py
+-> SQLAlchemy engine
+-> PyMySQL driver
+-> remote MySQL
+-> pandas DataFrame
 ```
 
 This keeps database access consistent and prevents service files from becoming messy SQL-heavy modules.
@@ -157,10 +157,10 @@ So the service flow is:
 
 ```text
 farm_id
-→ validate in dim_farm
-→ get farm_name and farm metadata
-→ filter vw_harvest_full using farm_name
-→ return farm performance
+-> validate in dim_farm
+-> get farm_name and farm metadata
+-> filter vw_harvest_full using farm_name
+-> return farm performance
 ```
 
 This keeps the path parameter meaningful and prevents invalid farm IDs.

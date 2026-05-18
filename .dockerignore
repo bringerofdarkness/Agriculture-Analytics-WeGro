@@ -1,22 +1,107 @@
-.venv
-__pycache__
-*.pyc
+# ============================================================
+# Python cache / build artifacts
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
 *.pyo
 *.pyd
-.pytest_cache
-.mypy_cache
-.ruff_cache
+*.so
 
-.git
+.Python
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+
+# ============================================================
+# Virtual environments
+# ============================================================
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+
+# ============================================================
+# Test, lint, type-check, coverage caches
+# ============================================================
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.cache/
+
+# ============================================================
+# Git / version control
+# ============================================================
+.git/
 .gitignore
+.gitattributes
 
+# ============================================================
+# Environment / secrets
+# Never copy local credentials into Docker image.
+# Use --env-file .env at runtime instead.
+# ============================================================
 .env
 .env.*
 !.env.example
 
-*.log
-*.sqlite
-*.db
+# ============================================================
+# IDE / editor files
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
 
+# ============================================================
+# OS generated files
+# ============================================================
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# ============================================================
+# Logs / runtime files
+# ============================================================
+*.log
+logs/
+tmp/
+temp/
+*.pid
+
+# ============================================================
+# Local databases / notebooks / exports
+# ============================================================
+*.sqlite
+*.sqlite3
+*.db
+*.csv
+*.xlsx
+*.xls
+.ipynb_checkpoints/
+
+# ============================================================
+# Docker / compose local overrides
+# ============================================================
+docker-compose.override.yml
+
+# ============================================================
+# Project temporary scripts or local inspection outputs
+# Keep production image focused on app code only.
+# ============================================================
+scripts/

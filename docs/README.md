@@ -60,10 +60,10 @@ GET /crops/quality-breakdown
 
 ## Architecture Asset
 
-The project architecture image is stored at:
+The project architecture image is stored inside the documentation assets folder:
 
 ```text
-assets/Project_Architecture.jpeg
+docs/assets/Project_Architecture.jpeg
 ```
 
 It illustrates the main request flow:

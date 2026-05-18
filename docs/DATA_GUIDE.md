@@ -1,31 +1,87 @@
-# WeGro Agriculture Analytics API — Data Guide
+# Data Story & Analytics Blueprint
 
-This document explains the data sources, database views, dimension tables, pandas transformations, and EDA notebook used in the **WeGro Agriculture Analytics API**.
+This document explains how the agriculture database was understood, cleaned conceptually, and transformed into analytics-ready API responses for the WeGro Agriculture Analytics API.
 
-The API is built on top of the provided agriculture database for the WeGro Technologies Limited Associate Data Scientist Technical Assessment.
-
----
-
-## 1. Database Overview
-
-The project uses the provided remote MySQL database:
+Instead of only listing database tables, this guide explains the data journey:
 
 ```text
-agriculture_db
+Raw database records
+→ analytical views
+→ pandas DataFrames
+→ service-level transformations
+→ validated API responses
 ```
 
-The database follows a Star Schema-based structure. The API consumes the provided analytical views and selected dimension tables to generate report outputs.
-
-The backend does not create or modify database records.  
-It only reads data, processes it with pandas, and returns analytics through FastAPI endpoints.
+The goal is to show how the project thinks like a data product, not only like a backend API.
 
 ---
 
-## 2. Main Analytical Views Used
+## 1. Data Product Mindset
 
-The PRD recommended using the pre-built views because they simplify report generation.
+The API was designed around one central question:
 
-The project mainly uses:
+```text
+How can raw agriculture records be converted into practical farm, crop, market, yield, loss, and quality insights?
+```
+
+The database already provides structured agriculture data. The backend transforms that data into decision-friendly summaries through FastAPI endpoints.
+
+The project does not modify the database. It reads data, validates it, processes it using pandas, and returns clean JSON responses.
+
+---
+
+## 2. Source-of-Truth Strategy
+
+The implementation treats the MySQL database as the only source of truth.
+
+No endpoint uses hardcoded analytics values.
+
+Every response is generated from:
+
+```text
+remote MySQL database
+SQLAlchemy connection
+pandas DataFrame processing
+Pydantic response validation
+```
+
+This is important because PRD examples are static examples, while real API responses must reflect the actual database records.
+
+---
+
+## 3. Data Access Philosophy
+
+The project does not allow random table reads from inside service functions.
+
+Instead, data loading is controlled through:
+
+```text
+app/services/data_loader.py
+```
+
+This file acts as the controlled gateway between analytics logic and the database.
+
+The intended flow is:
+
+```text
+analytics service
+→ data_loader.py
+→ database.py
+→ SQLAlchemy engine
+→ PyMySQL driver
+→ remote MySQL
+→ pandas DataFrame
+```
+
+This keeps database access consistent and prevents service files from becoming messy SQL-heavy modules.
+
+---
+
+## 4. Core Data Sources
+
+The project mainly works with three analytical views and selected dimension tables.
+
+### Analytical Views
 
 ```text
 vw_harvest_full
@@ -33,35 +89,39 @@ vw_revenue_by_crop_year
 vw_farm_profitability
 ```
 
----
-
-## 3. vw_harvest_full
-
-`vw_harvest_full` is the primary data source for most endpoints.
-
-It contains joined harvest, farm, crop, market, date, input, revenue, profit, quality, and loss information.
-
-Common columns used from this view include:
+### Dimension Tables
 
 ```text
-harvest_id
+dim_farm
+dim_crop
+dim_market
+```
+
+The views provide convenient reporting-level data.  
+The dimension tables are used when endpoint requirements need extra metadata such as `farm_id`, `crop_id`, benchmark yield, growing season, market district, or price tier.
+
+---
+
+## 5. Main Working View: vw_harvest_full
+
+Most API insights come from `vw_harvest_full`.
+
+This view is useful because it combines farm, crop, season, market, harvest, revenue, cost, profit, quality, and loss-related fields into one analytics-friendly source.
+
+Important fields used across the project include:
+
+```text
 farm_name
 owner_name
 region
 farm_district
 farm_type
-total_area_ha
 crop_name
 crop_category
 growing_season
-full_date
-month_name
-quarter
 year
+quarter
 season
-supply_name
-supply_type
-is_organic
 market_name
 market_type
 price_tier
@@ -74,234 +134,87 @@ revenue_bdt
 input_cost_bdt
 net_profit_bdt
 quality_grade
-moisture_pct
 pesticide_residue
 ```
 
-Used by:
-
-```text
-/farms/summary
-/farms/{farm_id}/performance
-/farms/loss-analysis
-/crops/yield-efficiency
-/crops/seasonal-trend
-/markets/price-comparison
-/crops/quality-breakdown
-```
+This view powers most reporting logic because it already gives a near-complete business picture of each harvest and sale event.
 
 ---
 
-## 4. vw_farm_profitability
+## 6. Why Dimension Tables Were Still Needed
 
-`vw_farm_profitability` is used for farm profitability and ranking analytics.
+The views were useful, but they did not solve every endpoint requirement.
 
-It supports:
+Some PRD requirements needed extra joins.
 
-```text
-/farms/top
-```
+### dim_farm
 
-Typical analytics from this view include:
+Used because the single farm endpoint receives `farm_id`.
 
-```text
-farm-level revenue
-farm-level input cost
-net profit
-ranking by profit
-ranking by revenue
-ranking by yield
-```
+The harvest view contains farm names, but the endpoint path requires an integer farm ID.
 
----
-
-## 5. vw_revenue_by_crop_year
-
-`vw_revenue_by_crop_year` is available as a recommended PRD view for crop-year revenue analysis.
-
-The project keeps data loading support for this view through the data loader so that the analytics layer can be extended if more crop-year revenue endpoints are required in the future.
-
----
-
-## 6. Dimension Tables Used
-
-Although the PRD recommends the views, some endpoints need extra metadata from dimension tables.
-
-The project uses:
-
-```text
-dim_farm
-dim_crop
-dim_market
-```
-
----
-
-## 7. dim_farm
-
-Used for farm metadata and farm ID validation.
-
-Important columns:
+So the service flow is:
 
 ```text
 farm_id
-farm_name
-owner_name
-region
-farm_type
+→ validate in dim_farm
+→ get farm_name and farm metadata
+→ filter vw_harvest_full using farm_name
+→ return farm performance
 ```
 
-Used by:
-
-```text
-/farms/{farm_id}/performance
-```
-
-Why it is needed:
-
-```text
-vw_harvest_full contains farm_name but not farm_id.
-The endpoint path requires farm_id.
-Therefore, dim_farm is used to validate farm_id and map it to farm_name.
-```
+This keeps the path parameter meaningful and prevents invalid farm IDs.
 
 ---
 
-## 8. dim_crop
+### dim_crop
 
-Used for crop metadata, benchmark yield, crop ID filtering, growing season, and water requirement.
+Used for crop-level metadata.
 
-Important columns:
+This table supports:
 
 ```text
-crop_id
-crop_name
-crop_category
-growing_season
-avg_yield_ton_per_ha
-water_requirement
+crop_id filtering
+crop growing season
+benchmark yield
+water requirement
+crop category mapping
 ```
 
-Used by:
+It is important for:
 
 ```text
-/farms/loss-analysis
 /crops/yield-efficiency
 /crops/quality-breakdown
+/farms/loss-analysis
 ```
 
-Why it is needed:
-
-```text
-Crop yield benchmark is stored in dim_crop.
-Crop ID filtering requires dim_crop because vw_harvest_full does not directly contain crop_id.
-Crop growing season values come from dim_crop.
-```
+One important project decision was to join crop metadata when an endpoint needed `crop_id` or crop growing season. This avoided pretending that `vw_harvest_full` had columns it did not actually contain.
 
 ---
 
-## 9. dim_market
+### dim_market
 
-Used for market metadata, market district, and market price tier.
+Used for market metadata.
 
-Important columns:
+This was important because market district should come from the market table, not from farm district.
 
-```text
-market_name
-market_type
-district
-price_tier
-```
-
-Used by:
+For `/markets/price-comparison`, the correct interpretation is:
 
 ```text
-/markets/price-comparison
+market district = district of market channel
+farm district = district of farm location
 ```
 
-Why it is needed:
-
-```text
-Market district should come from dim_market.
-It should not be confused with farm district from farm-related records.
-```
+The endpoint therefore joins market metadata and uses `dim_market.district` for district filtering and output.
 
 ---
 
-## 10. Data Loading Layer
+## 7. Endpoint-to-Data Lineage
 
-Data loading is handled in:
+This section shows how each endpoint gets its data.
 
-```text
-app/services/data_loader.py
-```
-
-This layer reads allowlisted database views and dimension tables.
-
-Data is loaded through:
-
-```text
-pandas.read_sql()
-SQLAlchemy Engine
-PyMySQL Driver
-```
-
-Correct flow:
-
-```text
-Service function
-→ data_loader.py
-→ database.py
-→ SQLAlchemy Engine
-→ PyMySQL Driver
-→ Remote MySQL Database
-→ pandas DataFrame
-```
-
-The data loader prevents unsafe arbitrary reads by keeping approved sources allowlisted.
-
----
-
-## 11. pandas Processing Approach
-
-The API uses pandas after reading data from MySQL.
-
-Common pandas operations include:
-
-```text
-filtering
-merge
-groupby
-aggregation
-sorting
-rounding
-percentage calculation
-record serialization
-```
-
-The shared helper file is:
-
-```text
-app/services/dataframe_utils.py
-```
-
-Common utility functions:
-
-```text
-apply_optional_filters()
-validate_required_columns()
-ensure_dataframe_not_empty()
-round_numeric_columns()
-dataframe_to_records()
-```
-
-This keeps analytics service files cleaner and avoids repeated pandas code.
-
----
-
-## 12. Endpoint-Level Data Usage
-
-### Farm Summary
+### 1. Farm Summary
 
 Endpoint:
 
@@ -309,26 +222,28 @@ Endpoint:
 GET /farms/summary
 ```
 
-Main source:
+Data source:
 
 ```text
 vw_harvest_full
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-filter by region, farm_type, year, season
-group by farm_name, region, farm_type
-sum revenue_bdt
-sum input_cost_bdt
-sum net_profit_bdt
-calculate average loss percentage
+Group by farm_name, region, farm_type
+Aggregate revenue, cost, profit, and average loss percentage
+```
+
+Business purpose:
+
+```text
+Give a quick health summary for farms.
 ```
 
 ---
 
-### Single Farm Performance
+### 2. Single Farm Performance
 
 Endpoint:
 
@@ -336,27 +251,31 @@ Endpoint:
 GET /farms/{farm_id}/performance
 ```
 
-Main sources:
+Data sources:
 
 ```text
 dim_farm
 vw_harvest_full
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-validate farm_id using dim_farm
-map farm_id to farm_name
-filter harvest records for that farm
-optional filters: year, crop_category, market_type
-group crop performance records
-return farm metadata and performance rows
+Validate farm_id
+Map farm_id to farm_name
+Filter harvest records for that farm
+Return crop-year-market performance
+```
+
+Business purpose:
+
+```text
+Show detailed performance for one farm.
 ```
 
 ---
 
-### Top Farms Ranking
+### 3. Top Farms Ranking
 
 Endpoint:
 
@@ -364,32 +283,29 @@ Endpoint:
 GET /farms/top
 ```
 
-Main source:
+Data source:
 
 ```text
 vw_farm_profitability
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-filter by region, farm_type, year
-rank by selected metric
-apply limit
-return ranked farms
+Filter optional dimensions
+Rank farms by profit, revenue, or yield
+Apply limit
 ```
 
-Supported metrics:
+Business purpose:
 
 ```text
-profit
-revenue
-yield
+Identify strongest farms by selected performance metric.
 ```
 
 ---
 
-### Loss Analysis
+### 4. Loss Analysis
 
 Endpoint:
 
@@ -397,34 +313,40 @@ Endpoint:
 GET /farms/loss-analysis
 ```
 
-Main sources:
+Data sources:
 
 ```text
 vw_harvest_full
 dim_crop
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-join crop metadata where required
-filter by region, year, growing season, quality_grade, crop_category
-sum harvested quantity
-sum lost quantity
-calculate overall loss percentage
-group loss by region, crop_category, quality_grade, pesticide_residue
+Use crop growing season
+Filter by region, year, quality grade, crop category
+Calculate total harvested quantity
+Calculate total lost quantity
+Calculate overall loss percentage
+Create grouped loss breakdown
 ```
 
-Important season note:
+Business purpose:
 
 ```text
-This endpoint uses crop growing season:
+Find where post-harvest losses are concentrated.
+```
+
+Important design note:
+
+```text
+For this endpoint, season means crop growing season:
 Rabi, Kharif, Zaid, Year-Round
 ```
 
 ---
 
-### Crop Yield Efficiency
+### 5. Crop Yield Efficiency
 
 Endpoint:
 
@@ -432,22 +354,19 @@ Endpoint:
 GET /crops/yield-efficiency
 ```
 
-Main sources:
+Data sources:
 
 ```text
 vw_harvest_full
 dim_crop
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-filter harvest data by crop_category, year, region
-filter crop benchmark data by crop_category, growing season, water_requirement
-join harvest records with crop benchmark data
-calculate actual yield
-compare actual yield with benchmark yield
-calculate efficiency percentage
+Calculate actual yield from harvest data
+Compare it against benchmark yield from dim_crop
+Calculate efficiency percentage
 ```
 
 Formula:
@@ -459,7 +378,7 @@ actual_avg_yield_ton_per_ha = quantity_harvested_ton / area_planted_ha
 Benchmark:
 
 ```text
-dim_crop.avg_yield_ton_per_ha
+avg_yield_benchmark_ton_per_ha = dim_crop.avg_yield_ton_per_ha
 ```
 
 Efficiency:
@@ -468,15 +387,22 @@ Efficiency:
 efficiency_pct = actual_avg_yield_ton_per_ha / avg_yield_benchmark_ton_per_ha * 100
 ```
 
-Important note:
+Business purpose:
 
 ```text
-Some actual yields may equal benchmark yields because the provided sample database contains benchmark-aligned harvest records.
+Understand whether crops are performing above or below benchmark yield.
+```
+
+Data observation:
+
+```text
+Some crops show exactly 100% efficiency because the sample database contains many benchmark-aligned harvest records.
+This is a data characteristic, not a calculation error.
 ```
 
 ---
 
-### Seasonal Revenue Trend
+### 6. Seasonal Revenue Trend
 
 Endpoint:
 
@@ -484,33 +410,38 @@ Endpoint:
 GET /crops/seasonal-trend
 ```
 
-Main source:
+Data source:
 
 ```text
 vw_harvest_full
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-filter by crop_name, crop_category, year, quarter, market_type
-group by crop_name, year, quarter, season
-sum quantity_sold_ton
-sum revenue_bdt
-calculate average price per ton
-count harvest records
+Group by crop_name, year, quarter, season
+Sum quantity sold
+Sum revenue
+Calculate average selling price
+Count harvest records
 ```
 
-Important note:
+Business purpose:
 
 ```text
-crop_name expects actual crop names such as Potato, Tomato, Boro Rice, Aman Rice, or Maize.
-crop_category should be used for values like Vegetable or Cereal.
+Understand how crop revenue changes over seasons and quarters.
+```
+
+Important usage note:
+
+```text
+crop_name expects values like Potato, Tomato, Boro Rice, Aman Rice.
+crop_category expects values like Vegetable, Cereal, Fruit.
 ```
 
 ---
 
-### Market Price Comparison
+### 7. Market Price Comparison
 
 Endpoint:
 
@@ -518,33 +449,37 @@ Endpoint:
 GET /markets/price-comparison
 ```
 
-Main sources:
+Data sources:
 
 ```text
 vw_harvest_full
 dim_market
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-join market metadata
-filter by market_type, crop_category, year, season, price_tier, district
-group by market_name, market_type, price_tier, district, crop_name
-calculate average selling price
-sum quantity sold
-sum revenue
+Join market metadata
+Filter by market type, crop category, year, season, price tier, district
+Group by market and crop
+Calculate average price, total quantity sold, and revenue
 ```
 
-Important note:
+Business purpose:
 
 ```text
-district comes from dim_market, not farm district.
+Compare which markets and channels provide better crop prices.
+```
+
+Implementation correction:
+
+```text
+The district field is taken from dim_market, not farm district.
 ```
 
 ---
 
-### Quality Grade Breakdown
+### 8. Quality Grade Breakdown
 
 Endpoint:
 
@@ -552,41 +487,130 @@ Endpoint:
 GET /crops/quality-breakdown
 ```
 
-Main sources:
+Data sources:
 
 ```text
 vw_harvest_full
 dim_crop
 ```
 
-Main operations:
+Main transformation:
 
 ```text
-join crop metadata for crop_id support
-filter by crop_id, crop_category, year, region, market_type, pesticide_residue
-count total records
-calculate quality grade distribution
-calculate pesticide residue distribution
-calculate average revenue by grade
+Join crop metadata for crop_id support
+Filter by crop, region, year, market type, and residue level
+Count records by quality grade
+Calculate grade percentage
+Calculate average revenue per grade
+Count pesticide residue levels
 ```
 
-Returned quality grades:
+Business purpose:
 
 ```text
-A, B, C, D
+Show how crop quality and pesticide residue are distributed.
 ```
 
-Returned pesticide residue levels:
+Response design:
 
 ```text
-None, Trace, Low, High
+All grades A, B, C, D are returned.
+All residue levels None, Trace, Low, High are returned.
+Zero-count categories are included for a complete response shape.
 ```
-
-Zero-count categories are still included for complete response shape.
 
 ---
 
-## 13. EDA Notebook
+## 8. pandas Transformation Pattern
+
+Most service functions follow a similar pandas pattern:
+
+```text
+1. Load required DataFrames.
+2. Validate that required columns exist.
+3. Apply optional filters.
+4. Check if filtered data is empty.
+5. Merge dimension metadata if required.
+6. Group and aggregate.
+7. Calculate derived metrics.
+8. Round numeric values.
+9. Convert DataFrame to JSON-safe records.
+```
+
+This pattern keeps the analytics consistent across endpoints.
+
+---
+
+## 9. Shared DataFrame Utilities
+
+Reusable pandas operations are kept in:
+
+```text
+app/services/dataframe_utils.py
+```
+
+This file supports the service layer with functions such as:
+
+```text
+apply_optional_filters()
+validate_required_columns()
+ensure_dataframe_not_empty()
+round_numeric_columns()
+dataframe_to_records()
+```
+
+These utilities are intentionally stateless.
+
+They do not know about API endpoints.  
+They do not connect to the database.  
+They only work with pandas DataFrames.
+
+This keeps them reusable and easy to test.
+
+---
+
+## 10. Data Validation and No-Data Handling
+
+The project handles two different problems separately.
+
+### Invalid request values
+
+Example:
+
+```text
+/farms/top?metric=random
+```
+
+This is a request validation issue.
+
+Expected response:
+
+```text
+422 Unprocessable Entity
+```
+
+### Valid request values but no matching data
+
+Example:
+
+```text
+/markets/price-comparison?district=UnknownDistrict
+```
+
+This is not a validation issue.  
+The parameter is valid as a string, but the database has no matching row.
+
+Expected response:
+
+```text
+404 Not Found
+```
+
+This distinction improves API correctness and user experience.
+
+---
+
+## 11. EDA Notebook Role
 
 The repository includes:
 
@@ -594,84 +618,90 @@ The repository includes:
 notebooks/01_comprehensive_eda.ipynb
 ```
 
-Purpose:
+The notebook is used for analysis, not production runtime.
+
+Its purpose is to support:
 
 ```text
-Explore the agriculture database
-Understand available columns
-Check distribution of farms, crops, markets, and seasons
-Create visualizations
-Support business insight generation before API implementation
+column understanding
+distribution checks
+farm and crop exploration
+market pattern exploration
+quality and residue analysis
+visualization
+business interpretation
 ```
 
-The notebook supports the data science side of the project.
+The notebook helps demonstrate the data science process behind the API.
 
-It is not part of the production API runtime.
+It is not required to start the server.
 
 ---
 
-## 14. Docker and Data Files
+## 12. Docker Data Boundary
 
-The Docker image includes:
+The Docker image is focused only on the API runtime.
+
+Included:
 
 ```text
 app/
 requirements.txt
+Python runtime
 installed dependencies
-runtime Python environment
 ```
 
-The Docker image excludes:
+Excluded:
 
 ```text
-notebooks/
 .env
 .git
 local .venv
+notebooks
 cache files
+local database files
 ```
 
-Database credentials are passed at runtime through:
+Database credentials are passed at runtime:
 
 ```bash
 docker run --rm --env-file .env -p 8000:8000 wegro-agriculture-api
 ```
 
----
-
-## 15. Data Quality and Validation Notes
-
-The API includes safeguards for:
-
-```text
-missing required columns
-empty filtered DataFrames
-invalid enum filter values
-valid filters that produce no rows
-```
-
-Behavior:
-
-```text
-Invalid enum/path filter → 422
-Valid filter but no matching rows → 404
-```
-
-This keeps responses predictable and avoids raw errors being returned to API users.
+This keeps the image cleaner and avoids leaking secrets.
 
 ---
 
-## 16. Summary
+## 13. Key Data Decisions
+
+Several important decisions were made during implementation:
+
+```text
+Use PRD-recommended views where possible.
+Use dimension tables only when endpoint logic requires them.
+Calculate actual yield from harvest quantity and planted area.
+Use dim_crop for benchmark yield.
+Use dim_market for market district.
+Use dim_farm for farm_id validation.
+Keep pandas utilities separate from business services.
+Return complete grade and residue keys even when counts are zero.
+Avoid hardcoded analytics values.
+```
+
+---
+
+## 14. Summary
 
 The data layer is designed to be:
 
 ```text
 read-only
+database-driven
 pandas-friendly
+traceable
 modular
-safe through allowlisted sources
-aligned with the PRD views
-clear for recruiter evaluation
+safe
+aligned with endpoint requirements
 ```
 
-The API uses the database as the source of truth and avoids hardcoded output values.
+The API turns the provided agriculture database into a structured analytics service while keeping the data processing logic transparent and maintainable.

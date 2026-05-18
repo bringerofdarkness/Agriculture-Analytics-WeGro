@@ -141,6 +141,9 @@ WeGro/
 │       ├── crop_reports.py
 │       └── market_reports.py
 │
+├── notebooks/
+│   └── 01_comprehensive_eda.ipynb
+│
 ├── scripts/
 │   ├── check_api_endpoints.py
 │   ├── check_all_endpoints.py

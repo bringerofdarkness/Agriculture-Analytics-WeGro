@@ -1,5 +1,4 @@
 from typing import Any
-
 from pydantic import BaseModel, ConfigDict
 
 
@@ -11,6 +10,7 @@ class CropYieldEfficiencyItem(BaseModel):
     efficiency_pct: float
     total_area_planted_ha: float
     season: str
+
 
 class CropSeasonalTrendItem(BaseModel):
     crop_name: str
@@ -68,8 +68,8 @@ class CropSeasonalTrendResponse(BaseModel):
                         "quarter": 1,
                         "season": "Winter",
                         "total_quantity_sold_ton": 392.0,
-                        "total_revenue_bdt": 8624000,
-                        "avg_price_per_ton_bdt": 22000,
+                        "total_revenue_bdt": 8624000.0,
+                        "avg_price_per_ton_bdt": 22000.0,
                         "num_harvests": 4,
                     }
                 ],

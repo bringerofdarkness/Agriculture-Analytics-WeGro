@@ -94,10 +94,11 @@ def get_market_price_comparison(
     filtered_df = apply_optional_filters(
         df,
         {
-            "market_type": market_type,
+            
             "crop_category": crop_category,
             "year": year,
             "season": season,
+            "market_type": market_type,
             "price_tier": price_tier,
             "market_district": district,
         },
@@ -155,10 +156,11 @@ def get_market_price_comparison(
     return {
         "filters_applied": build_filters_applied(
             {
-                "market_type": market_type,
+                
                 "crop_category": crop_category,
                 "year": year,
                 "season": season,
+                "market_type": market_type,
                 "price_tier": price_tier,
                 "district": district,
             }

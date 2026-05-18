@@ -1,3 +1,4 @@
+from typing import Any
 from fastapi import APIRouter
 
 from app.schemas.filters import (
@@ -10,7 +11,6 @@ from app.schemas.filters import (
 )
 from app.schemas.market_reports import MarketPriceComparisonResponse
 from app.services.market_reports import get_market_price_comparison
-
 
 router = APIRouter(
     prefix="/markets",
@@ -29,18 +29,18 @@ router = APIRouter(
     ),
 )
 def read_market_price_comparison(
-    market_type: MarketTypeFilter = None,
     crop_category: CropCategoryFilter = None,
     year: YearFilter = None,
     season: SeasonFilter = None,
+    market_type: MarketTypeFilter = None,
     price_tier: PriceTierFilter = None,
     district: DistrictFilter = None,
-) -> MarketPriceComparisonResponse:
+) -> dict[str, Any]:
     return get_market_price_comparison(
-        market_type=market_type,
         crop_category=crop_category,
         year=year,
         season=season,
+        market_type=market_type,
         price_tier=price_tier,
         district=district,
     )

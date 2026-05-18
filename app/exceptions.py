@@ -1,7 +1,6 @@
 class DataNotFoundError(Exception):
     """
     Raised when a valid request produces no matching analytics data.
-
     This maps to HTTP 404 in the FastAPI exception handler.
     """
 

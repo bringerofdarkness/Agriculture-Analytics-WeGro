@@ -1,5 +1,4 @@
 from typing import Any
-
 from pydantic import BaseModel, ConfigDict
 
 
@@ -33,9 +32,9 @@ class MarketPriceComparisonResponse(BaseModel):
                         "price_tier": "Premium",
                         "district": "Chittagong",
                         "crop_name": "Aman Rice",
-                        "avg_price_per_ton_bdt": 48000,
+                        "avg_price_per_ton_bdt": 48000.0,
                         "total_quantity_sold_ton": 87.0,
-                        "total_revenue_bdt": 4176000,
+                        "total_revenue_bdt": 4176000.0,
                     }
                 ],
             }

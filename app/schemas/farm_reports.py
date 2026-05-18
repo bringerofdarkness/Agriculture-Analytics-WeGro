@@ -1,8 +1,8 @@
-from typing import Any
-
+from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict
 
 
+# --- REPORT 1: ENDPOINT 1 (Farms Summary) ---
 class FarmSummaryItem(BaseModel):
     farm_name: str
     region: str
@@ -31,9 +31,9 @@ class FarmSummaryResponse(BaseModel):
                         "farm_name": "Green Valley Farm",
                         "region": "Dhaka",
                         "farm_type": "Large",
-                        "total_revenue_bdt": 4250000,
-                        "total_cost_bdt": 980000,
-                        "net_profit_bdt": 3270000,
+                        "total_revenue_bdt": 4250000.0,
+                        "total_cost_bdt": 980000.0,
+                        "net_profit_bdt": 3270000.0,
                         "avg_loss_pct": 4.2,
                     }
                 ],
@@ -42,6 +42,7 @@ class FarmSummaryResponse(BaseModel):
     )
 
 
+# --- REPORT 1: ENDPOINT 2 (Single Farm Performance) ---
 class SingleFarmPerformanceItem(BaseModel):
     crop_name: str
     year: int
@@ -77,8 +78,8 @@ class SingleFarmPerformanceResponse(BaseModel):
                         "year": 2023,
                         "market_type": "Wholesale",
                         "quantity_sold_ton": 60.0,
-                        "revenue_bdt": 1560000,
-                        "net_profit_bdt": 1180000,
+                        "revenue_bdt": 1560000.0,
+                        "net_profit_bdt": 1180000.0,
                         "quality_grade": "A",
                     }
                 ],
@@ -87,6 +88,7 @@ class SingleFarmPerformanceResponse(BaseModel):
     )
 
 
+# --- REPORT 1: ENDPOINT 3 (Top Farms Ranking) ---
 class TopFarmRankingItem(BaseModel):
     rank: int
     farm_name: str
@@ -116,8 +118,8 @@ class TopFarmsRankingResponse(BaseModel):
                         "farm_name": "Barind Farms",
                         "region": "Rajshahi",
                         "farm_type": "Commercial",
-                        "net_profit_bdt": 8900000,
-                        "total_revenue_bdt": 11200000,
+                        "net_profit_bdt": 8900000.0,
+                        "total_revenue_bdt": 11200000.0,
                     }
                 ],
             }
@@ -125,6 +127,7 @@ class TopFarmsRankingResponse(BaseModel):
     )
 
 
+# --- REPORT 1: ENDPOINT 4 (Farm Loss Analysis) ---
 class LossAnalysisSummary(BaseModel):
     total_harvested_ton: float
     total_lost_ton: float

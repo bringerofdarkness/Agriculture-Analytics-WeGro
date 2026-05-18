@@ -1,3 +1,4 @@
+import pandas as pd
 from typing import Any, Optional
 
 from app.enums import (
@@ -6,7 +7,7 @@ from app.enums import (
     PesticideResidue,
     Quarter,
     Region,
-    Season,
+    GrowingSeason,
     WaterRequirement,
     Year,
 )
@@ -76,7 +77,7 @@ PESTICIDE_RESIDUE_LEVELS: tuple[str, ...] = ("None", "Trace", "Low", "High")
 def get_crop_yield_efficiency(
     *,
     crop_category: Optional[CropCategory] = None,
-    season: Optional[Season] = None,
+    season: Optional[GrowingSeason] = None,
     year: Optional[Year] = None,
     region: Optional[Region] = None,
     water_requirement: Optional[WaterRequirement] = None,
@@ -91,7 +92,6 @@ def get_crop_yield_efficiency(
         harvest_df,
         {
             "crop_category": crop_category,
-            "season": season,
             "year": year,
             "region": region,
         },
@@ -101,6 +101,7 @@ def get_crop_yield_efficiency(
         crop_df,
         {
             "crop_category": crop_category,
+            "growing_season": season,
             "water_requirement": water_requirement,
         },
     )
@@ -212,17 +213,6 @@ def get_crop_seasonal_trend(
 ) -> dict[str, Any]:
     """
     Build the PRD response body for GET /crops/seasonal-trend.
-
-    Supported PRD filters:
-        - crop_name
-        - crop_category
-        - year
-        - quarter
-        - market_type
-
-    Notes:
-        This endpoint uses harvest/calendar season from vw_harvest_full.season,
-        not dim_crop.growing_season.
     """
     df = load_harvest_full()
 
@@ -289,21 +279,7 @@ def get_crop_quality_breakdown(
 ) -> dict[str, Any]:
     """
     Build the PRD response body for GET /crops/quality-breakdown.
-
-    Supported PRD filters:
-        - crop_id
-        - crop_category
-        - year
-        - region
-        - market_type
-        - pesticide_residue
     """
-    df = load_harvest_full()
-
-    df = load_harvest_full()
-
-
-
     harvest_df = load_harvest_full()
     crop_df = load_dim_crop()
 
@@ -334,8 +310,9 @@ def get_crop_quality_breakdown(
     )
 
     if df["crop_id"].isna().any():
-        raise ValueError("Some harvest records could not be matched to dim_crop.")
+        raise ValueError("Operational Error: Missing mapping relational crop_id data from dim_crop.")
 
+    # --- এখানে সেই মেগা সিনট্যাক্স ফিক্স করা হলো ---
     filtered_df = apply_optional_filters(
         df,
         {
@@ -355,34 +332,39 @@ def get_crop_quality_breakdown(
 
     total_records = int(len(filtered_df))
 
+    # --- 1. Grade Distribution Calculation ---
     grade_distribution: dict[str, dict[str, float | int]] = {}
 
     for grade in QUALITY_GRADES:
         grade_df = filtered_df[filtered_df["quality_grade"] == grade]
-        count = int(len(grade_df))
-        pct = round((count / total_records) * 100, 2) if total_records else 0.0
-        avg_revenue = (
-            round(float(grade_df["revenue_bdt"].mean()), 2) if count > 0 else 0.0
-        )
+        current_count = int(len(grade_df))
+        pct = round((current_count / total_records) * 100, 2) if total_records else 0.0
+        
+        avg_revenue = 0.0
+        if current_count > 0:
+            mean_val = grade_df["revenue_bdt"].mean()
+            avg_revenue = round(float(mean_val), 2) if not pd.isna(mean_val) else 0.0
 
         grade_distribution[grade] = {
-            "count": count,
-            "pct": pct,
+            "count": current_count, 
+            "pct": pct, 
             "avg_revenue_bdt": avg_revenue,
         }
 
+    # --- 2. Pesticide Residue Breakdown Calculation ---
     pesticide_residue_breakdown: dict[str, dict[str, float | int]] = {}
 
     for residue_level in PESTICIDE_RESIDUE_LEVELS:
         residue_df = filtered_df[filtered_df["pesticide_residue"] == residue_level]
-        count = int(len(residue_df))
-        pct = round((count / total_records) * 100, 2) if total_records else 0.0
+        residue_count = int(len(residue_df))
+        residue_pct = round((residue_count / total_records) * 100, 2) if total_records else 0.0
 
         pesticide_residue_breakdown[residue_level] = {
-            "count": count,
-            "pct": pct,
+            "count": residue_count,
+            "pct": residue_pct,
         }
 
+    # --- 3. Final PRD Response Return ---
     return {
         "filters_applied": build_filters_applied(
             {

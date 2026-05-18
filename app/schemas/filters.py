@@ -6,6 +6,7 @@ from fastapi import Path, Query
 from app.enums import (
     CropCategory,
     FarmType,
+    GrowingSeason,
     MarketType,
     PesticideResidue,
     PriceTier,
@@ -36,7 +37,22 @@ YearFilter = Annotated[
 
 SeasonFilter = Annotated[
     Optional[Season],
-    Query(description="Filter by season."),
+    Query(
+        description=(
+            "Filter by harvest/calendar season. "
+            "Accepted values: Spring, Summer, Autumn, Winter."
+        )
+    ),
+]
+
+GrowingSeasonFilter = Annotated[
+    Optional[GrowingSeason],
+    Query(
+        description=(
+            "Filter by crop growing season. "
+            "Accepted values: Rabi, Kharif, Zaid, Year-Round."
+        )
+    ),
 ]
 
 CropCategoryFilter = Annotated[
@@ -91,7 +107,7 @@ CropIdFilter = Annotated[
 
 MetricFilter = Annotated[
     RankingMetric,
-    Query(description="Ranking metric."),
+    Query(description="Ranking metric. Accepted values: profit, revenue, yield."),
 ]
 
 LimitFilter = Annotated[
@@ -101,7 +117,11 @@ LimitFilter = Annotated[
 
 FarmIdPath = Annotated[
     int,
-    Path(description="Farm ID. PRD states farm_id is an integer from 1 to 30.", ge=1, le=30),
+    Path(
+        description="Farm ID. PRD states farm_id is an integer from 1 to 30.",
+        ge=1,
+        le=30,
+    ),
 ]
 
 

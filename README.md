@@ -117,7 +117,7 @@ This makes the project easier to test, maintain, debug, and extend.
 
 ```text
 External Client
-Browser / Swagger UI / Postman / Mobile App
+Browser / Swagger UI / curl / PowerShell Invoke-RestMethod
         |
         | HTTP Request
         v
@@ -169,9 +169,8 @@ The API can be accessed from:
 ```text
 Browser
 Swagger UI
-Postman
 curl
-Mobile App / Frontend Client
+PowerShell Invoke-RestMethod
 ```
 
 All requests are sent as standard HTTP requests to the FastAPI server.

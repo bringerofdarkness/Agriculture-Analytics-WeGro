@@ -66,6 +66,10 @@ The project architecture image is stored inside the documentation assets folder:
 docs/assets/Project_Architecture.jpeg
 ```
 
+Preview:
+
+![Project Architecture](assets/Project_Architecture.jpeg)
+
 It illustrates the main request flow:
 
 ```text

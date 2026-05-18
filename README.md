@@ -76,54 +76,204 @@ http://127.0.0.1:8000/docs
 
 ## Run with Docker
 
-### Build Image
+The project supports three Docker-based workflows:
 
-```powershell
-docker build -t wegro-agriculture-api .
+```text
+1. Quick PowerShell runner
+2. Docker Compose
+3. Manual docker build/run
 ```
 
-### Run Container
+Before running Docker, make sure a `.env` file exists in the project root.
 
-```powershell
-docker run --rm --env-file .env -p 8000:8000 wegro-agriculture-api
+A safe template is provided:
+
+```text
+.env.example
 ```
 
-Open:
+Create your local `.env` file from the example:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then update `.env` with the actual database credentials.
+
+---
+
+### Option 1: Run with PowerShell Helper
+
+For Windows PowerShell, the easiest way to run the Dockerized API is:
+
+```powershell
+.\run-docker.ps1
+```
+
+This script will:
+
+```text
+check if .env exists
+build the Docker image
+remove any old container with the same name
+start the API container
+wait for /health to pass
+print the Swagger and health URLs
+```
+
+Expected output includes:
+
+```text
+Container is healthy.
+Swagger UI: http://127.0.0.1:8000/docs
+Health URL: http://127.0.0.1:8000/health
+```
+
+If PowerShell blocks script execution, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\run-docker.ps1
+```
+
+To stop the container:
+
+```powershell
+docker stop wegro-agriculture-api
+docker rm wegro-agriculture-api
+```
+
+---
+
+### Option 2: Run with Docker Compose
+
+Build and start the API:
+
+```powershell
+docker compose up --build
+```
+
+Open Swagger UI:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-The Docker image uses a multi-stage build and runs the application with a non-root user.
+Check health:
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8000/health" | ConvertTo-Json -Depth 5
+```
+
+Expected health response:
+
+```json
+{
+  "status": "healthy",
+  "service": "wegro-agriculture-api",
+  "version": "1.0.0"
+}
+```
+
+Stop and remove the Compose container/network:
+
+```powershell
+docker compose down
+```
 
 ---
 
-## Quick Health Check
+### Option 3: Manual Docker Build and Run
 
-Compile the project:
-
-```powershell
-python -m compileall app scripts
-```
-
-Run the smoke test:
+Build the image:
 
 ```powershell
-python scripts\check_api_endpoints.py
+docker build -t wegro-agriculture-api .
 ```
 
-Expected final output:
+Run the container:
+
+```powershell
+docker run --rm --env-file .env -p 8000:8000 wegro-agriculture-api
+```
+
+Open Swagger UI:
 
 ```text
-ALL API SMOKE CHECKS PASSED
+http://127.0.0.1:8000/docs
 ```
 
-The smoke test checks:
+Health endpoint:
 
-- all 8 required endpoints
-- invalid filter validation
-- invalid path validation
-- no-data response handling
+```text
+http://127.0.0.1:8000/health
+```
+
+---
+
+### Docker Health Check
+
+The API includes a lightweight health endpoint:
+
+```text
+GET /health
+```
+
+The Docker image also includes a container-level `HEALTHCHECK` that calls this endpoint.
+
+Check container health:
+
+```powershell
+docker ps
+```
+
+Or inspect the health status directly:
+
+```powershell
+docker inspect --format='{{json .State.Health.Status}}' wegro-agriculture-api
+```
+
+Expected result:
+
+```text
+"healthy"
+```
+
+---
+
+### Docker Notes
+
+The Docker setup is designed to keep the runtime image clean.
+
+The Docker image does not copy:
+
+```text
+.env
+.venv
+.git
+notebooks
+cache files
+local development artifacts
+```
+
+The container runs the FastAPI application as a non-root user.
+
+Database credentials are passed at runtime through:
+
+```powershell
+--env-file .env
+```
+
+If port `8000` is already in use, either stop the running process/container or map a different host port:
+
+```powershell
+docker run --rm --env-file .env -p 8001:8000 wegro-agriculture-api
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8001/docs
+```
 
 ---
 

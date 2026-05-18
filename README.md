@@ -46,7 +46,7 @@ It uses:
 - **Pydantic** for response validation
 - **Docker** for containerized deployment
 
-The API is designed to be tested locally by evaluators through Swagger UI, curl, Postman, or direct browser/API requests.
+The API can be tested locally through Swagger UI, PowerShell Invoke-RestMethod, curl, or direct browser requests.
 
 ---
 

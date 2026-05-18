@@ -161,7 +161,7 @@ def get_farm_summary(
         )
     )
     
-    # NaN-safe fallbacks for metrics
+    
     summary_df["avg_loss_pct"] = summary_df["avg_loss_pct"].fillna(0.0)
 
     summary_df = (

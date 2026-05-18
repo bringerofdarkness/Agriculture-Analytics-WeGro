@@ -2,7 +2,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict
 
 
-# --- REPORT 1: ENDPOINT 1 (Farms Summary) ---
+# REPORT 1: ENDPOINT 1 (Farms Summary) ---
 class FarmSummaryItem(BaseModel):
     farm_name: str
     region: str
@@ -42,7 +42,7 @@ class FarmSummaryResponse(BaseModel):
     )
 
 
-# --- REPORT 1: ENDPOINT 2 (Single Farm Performance) ---
+# REPORT 1: ENDPOINT 2 (Single Farm Performance) ---
 class SingleFarmPerformanceItem(BaseModel):
     crop_name: str
     year: int
@@ -88,7 +88,7 @@ class SingleFarmPerformanceResponse(BaseModel):
     )
 
 
-# --- REPORT 1: ENDPOINT 3 (Top Farms Ranking) ---
+# REPORT 1: ENDPOINT 3 (Top Farms Ranking) ---
 class TopFarmRankingItem(BaseModel):
     rank: int
     farm_name: str
@@ -127,7 +127,7 @@ class TopFarmsRankingResponse(BaseModel):
     )
 
 
-# --- REPORT 1: ENDPOINT 4 (Farm Loss Analysis) ---
+# REPORT 1: ENDPOINT 4 (Farm Loss Analysis) ---
 class LossAnalysisSummary(BaseModel):
     total_harvested_ton: float
     total_lost_ton: float

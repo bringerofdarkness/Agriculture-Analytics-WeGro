@@ -738,11 +738,11 @@ Create a `.env` file in the project root.
 Example:
 
 ```env
-DB_HOST=your_mysql_host
-DB_PORT=3306
-DB_USER=your_mysql_username
-DB_PASSWORD=your_mysql_password
-DB_NAME=agriculture_db
+HOST=your_mysql_host
+PORT=3306
+USER=your_mysql_username
+PASSWORD=your_mysql_password
+DATABASE=agriculture_db
 ```
 
 The `.env` file is intentionally excluded from Git and Docker build context.
@@ -757,7 +757,7 @@ Do not commit database credentials to GitHub.
 
 ```bash
 git clone <your-public-github-repo-url>
-cd WeGro
+cd Agriculture-Analytics-WeGro
 ```
 
 ### 2. Create a virtual environment

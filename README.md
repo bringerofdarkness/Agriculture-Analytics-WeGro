@@ -107,53 +107,598 @@ This implementation prioritizes:
 
 ## Project Architecture
 
+The WeGro Agriculture Analytics API follows a clean, layered backend architecture. The application separates request handling, validation, business analytics, pandas utilities, database access, and external MySQL connectivity into independent modules.
+
+This makes the project easier to test, maintain, debug, and extend.
+
+---
+
+### High-Level Architecture Flow
+
 ```text
-WeGro/
-│
-├── app/
-│   ├── main.py
-│   ├── config.py
-│   ├── database.py
-│   ├── exceptions.py
-│   │
-│   ├── enums/
-│   │   ├── __init__.py
-│   │   └── filters.py
-│   │
-│   ├── routers/
-│   │   ├── __init__.py
-│   │   ├── farms.py
-│   │   ├── crops.py
-│   │   ├── markets.py
-│   │   └── crop_quality.py
-│   │
-│   ├── schemas/
-│   │   ├── filters.py
-│   │   ├── farm_reports.py
-│   │   ├── crop_reports.py
-│   │   └── market_reports.py
-│   │
-│   └── services/
-│       ├── __init__.py
-│       ├── data_loader.py
-│       ├── dataframe_utils.py
-│       ├── farm_reports.py
-│       ├── crop_reports.py
-│       └── market_reports.py
-│
-├── notebooks/
-│   └── 01_comprehensive_eda.ipynb
-│
-├── scripts/
-│   ├── check_api_endpoints.py
-│   ├── check_all_endpoints.py
-│   ├── check_crop_quality_breakdown.py
-│   └── check_market_price_comparison.py
-│
-├── Dockerfile
-├── .dockerignore
-├── requirements.txt
-└── README.md
+External Client
+Browser / Swagger UI / Postman / Mobile App
+        |
+        | HTTP Request
+        v
+FastAPI Application Entry Point
+app/main.py
+        |
+        | Middleware + Exception Handling + Router Registration
+        v
+Router Layer
+app/routers/
+        |
+        | Query Parameters + Path Parameters
+        v
+Validation & Schema Layer
+app/schemas/
+app/enums/
+        |
+        | Validated Inputs
+        v
+Service Layer
+app/services/
+        |
+        | Business Logic + pandas Analytics
+        v
+Shared DataFrame Utility Layer
+app/services/dataframe_utils.py
+        |
+        | Filtering, Column Validation, Rounding, Serialization
+        v
+Data Access Layer
+app/config.py
+app/database.py
+app/services/data_loader.py
+        |
+        | SQLAlchemy Engine + PyMySQL Driver
+        v
+Remote MySQL Database
+agriculture_db
+```
+
+---
+
+### Layer-by-Layer Breakdown
+
+#### 1. External Client Layer
+
+The API can be accessed from:
+
+```text
+Browser
+Swagger UI
+Postman
+curl
+Mobile App / Frontend Client
+```
+
+All requests are sent as standard HTTP requests to the FastAPI server.
+
+Example:
+
+```text
+GET /farms/summary?region=Dhaka&year=2023
+```
+
+---
+
+#### 2. API Application Layer
+
+Main file:
+
+```text
+app/main.py
+```
+
+Responsibilities:
+
+- creates the FastAPI application
+- registers all routers
+- configures API title, version, and documentation
+- handles application startup
+- registers global exception handlers
+- exposes Swagger/OpenAPI documentation
+
+Swagger UI is available at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+#### 3. Router Layer
+
+Folder:
+
+```text
+app/routers/
+```
+
+Router files:
+
+```text
+farms.py
+crops.py
+markets.py
+crop_quality.py
+```
+
+Responsibilities:
+
+- define API endpoint paths
+- receive query and path parameters
+- connect endpoint requests to service-layer functions
+- keep route definitions clean and minimal
+
+Implemented endpoints:
+
+```text
+GET /farms/summary
+GET /farms/{farm_id}/performance
+GET /farms/top
+GET /farms/loss-analysis
+
+GET /crops/yield-efficiency
+GET /crops/seasonal-trend
+GET /markets/price-comparison
+GET /crops/quality-breakdown
+```
+
+The router layer does not perform heavy analytics.  
+It only receives validated API inputs and calls the correct service function.
+
+---
+
+#### 4. Validation & Schema Layer
+
+Folders:
+
+```text
+app/schemas/
+app/enums/
+```
+
+Responsibilities:
+
+- define Pydantic response models
+- define reusable query/path filter aliases
+- define enum-based accepted filter values
+- ensure clean Swagger documentation
+- return `422 Unprocessable Entity` for invalid filter values
+
+Important files:
+
+```text
+app/schemas/filters.py
+app/schemas/farm_reports.py
+app/schemas/crop_reports.py
+app/schemas/market_reports.py
+app/enums/filters.py
+```
+
+Examples of validated filters:
+
+```text
+region
+farm_type
+crop_category
+season
+market_type
+price_tier
+quality_grade
+pesticide_residue
+year
+quarter
+metric
+limit
+```
+
+This layer helps ensure that invalid values such as:
+
+```text
+region=InvalidCity
+quarter=9
+metric=random
+```
+
+are rejected automatically with clear validation errors.
+
+---
+
+#### 5. Service Layer
+
+Folder:
+
+```text
+app/services/
+```
+
+Main service files:
+
+```text
+farm_reports.py
+crop_reports.py
+market_reports.py
+```
+
+Responsibilities:
+
+- load required data through the data loader
+- apply business-specific filters
+- perform pandas grouping and aggregation
+- calculate analytics metrics
+- prepare response-ready dictionaries
+- raise clean no-data errors when valid filters return no rows
+
+Service modules:
+
+```text
+farm_reports.py
+```
+
+Handles:
+
+```text
+/farms/summary
+/farms/{farm_id}/performance
+/farms/top
+/farms/loss-analysis
+```
+
+```text
+crop_reports.py
+```
+
+Handles:
+
+```text
+/crops/yield-efficiency
+/crops/seasonal-trend
+/crops/quality-breakdown
+```
+
+```text
+market_reports.py
+```
+
+Handles:
+
+```text
+/markets/price-comparison
+```
+
+The service layer contains the main analytics logic of the project.
+
+---
+
+#### 6. Shared DataFrame Utility Layer
+
+File:
+
+```text
+app/services/dataframe_utils.py
+```
+
+This module contains reusable, stateless pandas helper functions.
+
+Responsibilities:
+
+- apply optional filters
+- validate required columns
+- check empty DataFrames
+- round numeric columns
+- convert DataFrames to JSON-safe records
+
+Common utility functions:
+
+```text
+apply_optional_filters()
+validate_required_columns()
+ensure_dataframe_not_empty()
+round_numeric_columns()
+dataframe_to_records()
+```
+
+This keeps the analytics service files cleaner and reduces repeated pandas logic.
+
+---
+
+#### 7. Data Access Layer
+
+Files:
+
+```text
+app/config.py
+app/database.py
+app/services/data_loader.py
+```
+
+Responsibilities:
+
+- read environment-based database configuration
+- create SQLAlchemy database engine
+- manage database connectivity
+- load approved database views and dimension tables into pandas DataFrames
+- prevent unsafe arbitrary table reads through allowlisted sources
+
+Data loading is performed through:
+
+```text
+pandas.read_sql()
+SQLAlchemy Engine
+PyMySQL Driver
+```
+
+Main data loader functions include:
+
+```text
+load_harvest_full()
+load_revenue_by_crop_year()
+load_farm_profitability()
+load_dim_farm()
+load_dim_crop()
+load_dim_market()
+```
+
+The data loader does not bypass SQLAlchemy.  
+The correct flow is:
+
+```text
+data_loader.py
+    -> app/database.py
+    -> SQLAlchemy Engine
+    -> PyMySQL Driver
+    -> Remote MySQL Database
+```
+
+---
+
+#### 8. Remote MySQL Database Layer
+
+Database:
+
+```text
+agriculture_db
+```
+
+Primary views used:
+
+```text
+vw_harvest_full
+vw_revenue_by_crop_year
+vw_farm_profitability
+```
+
+Dimension tables used:
+
+```text
+dim_farm
+dim_crop
+dim_market
+```
+
+Purpose of key sources:
+
+```text
+vw_harvest_full
+```
+
+Main harvest, sales, crop, farm, season, revenue, profit, quality, and loss data source.
+
+```text
+dim_farm
+```
+
+Used for farm metadata and farm ID validation.
+
+```text
+dim_crop
+```
+
+Used for crop metadata, crop ID mapping, growing season, water requirement, and benchmark yield.
+
+```text
+dim_market
+```
+
+Used for market metadata, market district, and price tier.
+
+---
+
+### Request-to-Response Lifecycle
+
+Example request:
+
+```text
+GET /crops/yield-efficiency?crop_category=Vegetable&year=2023&region=Dhaka
+```
+
+Processing flow:
+
+```text
+1. Client sends HTTP request.
+2. FastAPI receives request through app/main.py.
+3. Middleware and global exception handlers are available at application level.
+4. Request is routed to the correct router in app/routers/.
+5. Query parameters are validated using schemas and enums.
+6. Router calls the relevant service function.
+7. Service loads data through data_loader.py.
+8. data_loader.py uses SQLAlchemy + PyMySQL to read from remote MySQL.
+9. pandas applies filtering, grouping, aggregation, and calculations.
+10. Shared dataframe utilities clean and serialize the output.
+11. Pydantic response model validates the final response shape.
+12. JSON response is returned to the client.
+```
+
+---
+
+### Docker Runtime Architecture
+
+The project includes a production-style multi-stage Dockerfile.
+
+Docker runtime flow:
+
+```text
+Host Machine
+    |
+    | docker run --env-file .env -p 8000:8000 wegro-agriculture-api
+    v
+Docker Container
+    |
+    | FastAPI + Uvicorn
+    | Python virtual environment inside container
+    v
+Application Code
+    |
+    | SQLAlchemy + PyMySQL
+    v
+Remote MySQL Database
+```
+
+The Docker image contains:
+
+```text
+FastAPI application code
+Python runtime
+Installed Python dependencies
+Internal virtual environment
+```
+
+The Docker image does not contain:
+
+```text
+.env
+local .venv
+.git
+notebooks
+local cache files
+database credentials
+```
+
+Environment variables are passed at runtime using:
+
+```bash
+docker run --rm --env-file .env -p 8000:8000 wegro-agriculture-api
+```
+
+---
+
+### Environment Configuration
+
+Database credentials are stored in a local `.env` file.
+
+The `.env` file is:
+
+```text
+used by app/config.py
+loaded at runtime
+excluded from GitHub
+excluded from Docker image
+```
+
+Example environment variables should match the project configuration file:
+
+```text
+HOST
+PORT
+USER
+PASSWORD
+DATABASE
+```
+
+Never commit real database credentials to GitHub.
+
+---
+
+### Notebook & EDA Architecture
+
+Notebook folder:
+
+```text
+notebooks/
+```
+
+Notebook file:
+
+```text
+notebooks/01_comprehensive_eda.ipynb
+```
+
+Purpose:
+
+```text
+Exploratory Data Analysis
+Data understanding
+Visualization
+Business insight generation
+```
+
+The notebook is included to demonstrate data science analysis before API development.
+
+Important runtime note:
+
+```text
+The notebook is not part of the production API runtime.
+The notebook is not required for FastAPI server execution.
+The notebook is not copied into the Docker image.
+```
+
+The production API and notebook are intentionally separated.
+
+---
+
+### Architecture Summary
+
+```text
+External Client
+        |
+        v
+FastAPI App
+        |
+        v
+Routers
+        |
+        v
+Schemas + Enums
+        |
+        v
+Services
+        |
+        v
+Shared pandas utilities
+        |
+        v
+Data loader
+        |
+        v
+SQLAlchemy Engine
+        |
+        v
+PyMySQL Driver
+        |
+        v
+Remote MySQL Database
+```
+
+This architecture keeps the project modular, testable, and production-friendly.
+
+---
+
+### Design Principles Followed
+
+- Layered architecture
+- Separation of concerns
+- Reusable pandas utilities
+- Enum-based input validation
+- Pydantic response validation
+- Clear API error handling
+- No hardcoded database credentials
+- Dockerized runtime
+- Notebook separated from production API
+- Recruiter-friendly Swagger documentation
 ```
 
 ---

@@ -636,8 +636,121 @@ The notebook helps demonstrate the data science process behind the API.
 
 It is not required to start the server.
 
+
 ---
 
+## Exploratory Visualization Highlights
+
+The EDA notebook was used to understand the agriculture dataset before finalizing the API logic. These visualizations helped identify crop profitability patterns, category and market distribution, and the relationship between quality grade and post-harvest loss.
+
+These charts are not part of the API runtime. They were used as supporting analysis to understand the data and design meaningful analytics endpoints.
+
+---
+
+### 1. Top 10 Most Profitable Crops
+
+![Top Profitable Crops](assets/eda/top_profitable_crops.png)
+
+This chart ranks the top 10 crops by total net profit in BDT.
+
+The visualization shows that **Potato**, **Maize**, and **Boro Rice** are the strongest profit-generating crops in the dataset. Potato and Maize appear very close at the top, both contributing nearly 50 million BDT in total net profit. Boro Rice also shows strong performance, followed by Banana, Tomato, Mango, and Sugarcane.
+
+Crops such as **Onion**, **Jute**, and **Aman Rice** appear lower in the top-10 list, which suggests that profitability is not evenly distributed across crops. A small group of crops contributes a much larger share of total profit.
+
+This insight supports the need for analytics endpoints such as:
+
+```text
+/farms/top
+/crops/yield-efficiency
+/crops/seasonal-trend
+/markets/price-comparison
+```
+
+The chart also helps explain why profitability should be analyzed together with yield, market price, and seasonal trend. A crop may be profitable because of strong yield, better market price, lower cost, or larger production volume.
+
+Key takeaway:
+
+```text
+Potato, Maize, and Boro Rice are the major profit contributors in the available dataset.
+```
+
+---
+
+### 2. Crop Category and Market Channel Distribution
+
+![Crop and Market Distribution](assets/eda/category_market_distribution.png)
+
+This visualization contains two distribution checks: one for crop categories and one for market channels.
+
+The crop category chart shows that **Cereal** records dominate the dataset. **Vegetable** crops are the second most frequent category. Other categories such as Fruit, Cash Crop, Pulse, Spice, and Oilseed appear in smaller numbers.
+
+This means that some API results may naturally contain more Cereal and Vegetable records than other categories. If a Cereal filter returns more data than a Spice or Oilseed filter, it reflects the underlying data distribution rather than an API issue.
+
+The market channel chart shows that **Wholesale** is the most common market type in the dataset. Government Procurement and Retail also have noticeable representation, while Local and Export channels appear less frequently.
+
+This distribution is important for interpreting endpoints such as:
+
+```text
+/crops/seasonal-trend
+/markets/price-comparison
+/crops/quality-breakdown
+```
+
+For example, market price analysis may show more stable or more frequent results for Wholesale because that channel has more records. Export may return fewer records because it has lower representation in the dataset.
+
+Key takeaway:
+
+```text
+The dataset is heavily represented by Cereal crops and Wholesale market transactions.
+```
+
+---
+
+### 3. Post-Harvest Loss Percentage across Quality Grades
+
+![Post-Harvest Loss by Quality Grade](assets/eda/loss_by_quality_grade.png)
+
+This boxplot compares post-harvest loss percentage across quality grades.
+
+Grade **A** shows a wider spread of loss percentages, including lower-loss records and some higher-loss outliers. Grade **B** also has a broad range, with some records reaching relatively high loss percentages. Grade **C** appears more concentrated in the visible chart and shows loss values mostly around the higher mid-range. Grade **D** does not show a visible distribution in this plot, which suggests that there may be no records or very limited records for that grade in the plotted data.
+
+This chart shows that quality grade is not only a label for produce quality. It can also be useful for understanding post-harvest loss behavior. Higher-quality grades may still experience loss variation, and some grades may have more consistent or more concentrated loss patterns.
+
+This insight supports the design of:
+
+```text
+/farms/loss-analysis
+/crops/quality-breakdown
+```
+
+The loss analysis endpoint quantifies where losses are happening, while the quality breakdown endpoint connects quality grades with record counts, revenue, and pesticide residue distribution.
+
+Key takeaway:
+
+```text
+Post-harvest loss varies across quality grades, and quality grade is useful for analyzing both production quality and loss behavior.
+```
+
+---
+
+### Overall EDA Interpretation
+
+The visualizations show that the dataset contains meaningful variation across crops, crop categories, market channels, and quality grades.
+
+Main observations:
+
+```text
+Potato, Maize, and Boro Rice are leading profit contributors.
+Cereal and Vegetable crops have the strongest representation in the dataset.
+Wholesale is the most common market channel.
+Post-harvest loss percentage varies across quality grades.
+Some categories and market channels have fewer records, which affects filtered API outputs.
+```
+
+These observations helped shape the final API design. Instead of returning raw database rows, the project exposes focused analytics endpoints that allow filtering by farm, crop, region, year, season, market type, quality grade, and pesticide residue.
+
+The EDA confirms that the API endpoints are meaningful because the underlying dataset contains enough variation to support farm performance analysis, crop yield comparison, seasonal trend analysis, market price comparison, loss analysis, and quality breakdown reporting.
+---
 ## 12. Docker Data Boundary
 
 The Docker image is focused only on the API runtime.

@@ -1,11 +1,6 @@
-# Project Reference - WeGro Agriculture Analytics API
-
----
-
 ## Table of Contents
 
 - [Project Reference - WeGro Agriculture Analytics API](#project-reference---wegro-agriculture-analytics-api)
-  - [Table of Contents](#table-of-contents)
   - [1. Project Identity](#1-project-identity)
   - [2. What This Project Solves](#2-what-this-project-solves)
   - [3. Assessment Requirement Mapping](#3-assessment-requirement-mapping)
@@ -46,6 +41,12 @@
   - [15. Final Confidence Summary](#15-final-confidence-summary)
   
 ---
+
+# Project Reference - WeGro Agriculture Analytics API
+
+---
+
+
 
 This document is the internal technical reference for the WeGro Agriculture Analytics API.
 

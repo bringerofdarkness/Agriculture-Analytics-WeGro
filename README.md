@@ -6,6 +6,55 @@ This project reads from a remote MySQL agriculture database, transforms the data
 
 ---
 
+
+## Table of Contents
+
+- [WeGro Agriculture Analytics API](#wegro-agriculture-analytics-api)
+  - [Table of Contents](#table-of-contents)
+  - [What This Project Does](#what-this-project-does)
+  - [Run the Project Locally](#run-the-project-locally)
+    - [1. Clone](#1-clone)
+    - [2. Create `.env`](#2-create-env)
+    - [3. Create Virtual Environment](#3-create-virtual-environment)
+    - [4. Install Requirements](#4-install-requirements)
+    - [5. Start FastAPI](#5-start-fastapi)
+  - [Run with Docker](#run-with-docker)
+    - [Option 1: Run with PowerShell Helper](#option-1-run-with-powershell-helper)
+    - [Option 2: Run with Docker Compose](#option-2-run-with-docker-compose)
+    - [Option 3: Manual Docker Build and Run](#option-3-manual-docker-build-and-run)
+    - [Docker Health Check](#docker-health-check)
+    - [Docker Notes](#docker-notes)
+  - [API Route Map](#api-route-map)
+    - [Farm Performance](#farm-performance)
+    - [Crop \& Market Intelligence](#crop--market-intelligence)
+  - [Example PowerShell Requests](#example-powershell-requests)
+    - [Farm Summary](#farm-summary)
+    - [Single Farm Performance](#single-farm-performance)
+    - [Top Farms](#top-farms)
+    - [Loss Analysis](#loss-analysis)
+    - [Yield Efficiency](#yield-efficiency)
+    - [Seasonal Revenue Trend](#seasonal-revenue-trend)
+    - [Market Price Comparison](#market-price-comparison)
+    - [Quality Grade Breakdown](#quality-grade-breakdown)
+  - [Technology Used](#technology-used)
+  - [Code Layout](#code-layout)
+  - [How the Backend Is Organized](#how-the-backend-is-organized)
+  - [Data Sources](#data-sources)
+  - [Important Implementation Notes](#important-implementation-notes)
+    - [Yield Efficiency](#yield-efficiency-1)
+    - [Season Handling](#season-handling)
+    - [Market District](#market-district)
+  - [Error Handling](#error-handling)
+    - [Invalid filter value](#invalid-filter-value)
+    - [Valid filter but no matching row](#valid-filter-but-no-matching-row)
+  - [EDA Notebook](#eda-notebook)
+  - [Documentation](#documentation)
+  - [Docker Notes](#docker-notes-1)
+  - [Current Verification](#current-verification)
+  - [Notes](#notes)
+
+---
+
 ## What This Project Does
 
 The API answers practical agriculture analytics questions:

@@ -1,5 +1,5 @@
 ## Table of Contents
-
+---
 - [Project Reference - WeGro Agriculture Analytics API](#project-reference---wegro-agriculture-analytics-api)
   - [1. Project Identity](#1-project-identity)
   - [2. What This Project Solves](#2-what-this-project-solves)

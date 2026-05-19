@@ -1,4 +1,47 @@
 # Data Story & Analytics Blueprint
+---
+
+## Table of Contents
+
+- [Data Story \& Analytics Blueprint](#data-story--analytics-blueprint)
+  - [Table of Contents](#table-of-contents)
+  - [1. Data Product Mindset](#1-data-product-mindset)
+  - [2. Source-of-Truth Strategy](#2-source-of-truth-strategy)
+  - [3. Data Access Philosophy](#3-data-access-philosophy)
+  - [4. Core Data Sources](#4-core-data-sources)
+    - [Analytical Views](#analytical-views)
+    - [Dimension Tables](#dimension-tables)
+  - [5. Main Working View: vw\_harvest\_full](#5-main-working-view-vw_harvest_full)
+  - [6. Why Dimension Tables Were Still Needed](#6-why-dimension-tables-were-still-needed)
+    - [dim\_farm](#dim_farm)
+    - [dim\_crop](#dim_crop)
+    - [dim\_market](#dim_market)
+  - [7. Endpoint-to-Data Lineage](#7-endpoint-to-data-lineage)
+    - [1. Farm Summary](#1-farm-summary)
+    - [2. Single Farm Performance](#2-single-farm-performance)
+    - [3. Top Farms Ranking](#3-top-farms-ranking)
+    - [4. Loss Analysis](#4-loss-analysis)
+    - [5. Crop Yield Efficiency](#5-crop-yield-efficiency)
+    - [6. Seasonal Revenue Trend](#6-seasonal-revenue-trend)
+    - [7. Market Price Comparison](#7-market-price-comparison)
+    - [8. Quality Grade Breakdown](#8-quality-grade-breakdown)
+  - [8. pandas Transformation Pattern](#8-pandas-transformation-pattern)
+  - [9. Shared DataFrame Utilities](#9-shared-dataframe-utilities)
+  - [10. Data Validation and No-Data Handling](#10-data-validation-and-no-data-handling)
+    - [Invalid request values](#invalid-request-values)
+    - [Valid request values but no matching data](#valid-request-values-but-no-matching-data)
+  - [11. EDA Notebook Role](#11-eda-notebook-role)
+  - [Exploratory Visualization Highlights](#exploratory-visualization-highlights)
+    - [1. Top 10 Most Profitable Crops](#1-top-10-most-profitable-crops)
+    - [2. Crop Category and Market Channel Distribution](#2-crop-category-and-market-channel-distribution)
+    - [3. Post-Harvest Loss Percentage across Quality Grades](#3-post-harvest-loss-percentage-across-quality-grades)
+    - [Overall EDA Interpretation](#overall-eda-interpretation)
+  - [The EDA confirms that the API endpoints are meaningful because the underlying dataset contains enough variation to support farm performance analysis, crop yield comparison, seasonal trend analysis, market price comparison, loss analysis, and quality breakdown reporting.](#the-eda-confirms-that-the-api-endpoints-are-meaningful-because-the-underlying-dataset-contains-enough-variation-to-support-farm-performance-analysis-crop-yield-comparison-seasonal-trend-analysis-market-price-comparison-loss-analysis-and-quality-breakdown-reporting)
+  - [12. Docker Data Boundary](#12-docker-data-boundary)
+  - [13. Key Data Decisions](#13-key-data-decisions)
+  - [14. Summary](#14-summary)
+
+---
 
 This document explains how the agriculture database was understood, cleaned conceptually, and transformed into analytics-ready API responses for the WeGro Agriculture Analytics API.
 

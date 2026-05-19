@@ -1,5 +1,28 @@
 # API Playbook
 
+---
+
+## Table of Contents
+
+- [How to Read This Playbook](#how-to-read-this-playbook)
+- [Fast Verification Route Map](#fast-verification-route-map)
+- [Common Test Setup](#common-test-setup)
+- [Report 1 - Farm Performance](#report-1---farm-performance)
+  - [Endpoint 1 - Farm Summary](#endpoint-1---farm-summary)
+  - [Endpoint 2 - Single Farm Performance](#endpoint-2---single-farm-performance)
+  - [Endpoint 3 - Top Farms](#endpoint-3---top-farms)
+  - [Endpoint 4 - Loss Analysis](#endpoint-4---loss-analysis)
+- [Report 2 - Crop & Market Intelligence](#report-2---crop--market-intelligence)
+  - [Endpoint 5 - Crop Yield Efficiency](#endpoint-5---crop-yield-efficiency)
+  - [Endpoint 6 - Seasonal Revenue Trend](#endpoint-6---seasonal-revenue-trend)
+  - [Endpoint 7 - Market Price Comparison](#endpoint-7---market-price-comparison)
+  - [Endpoint 8 - Quality Grade Breakdown](#endpoint-8---quality-grade-breakdown)
+- [Validation Behavior](#validation-behavior)
+- [One-Command Smoke Test](#one-command-smoke-test)
+- [Reviewer Notes](#reviewer-notes)
+
+---
+
 This playbook explains how to review and test the WeGro Agriculture Analytics API.
 
 It is written from the perspective of someone checking the project quickly:

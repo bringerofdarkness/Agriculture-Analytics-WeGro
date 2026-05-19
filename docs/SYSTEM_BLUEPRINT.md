@@ -1,5 +1,33 @@
 # WeGro Agriculture Analytics API - Architecture
+---
 
+
+## Table of Contents
+
+- [WeGro Agriculture Analytics API - Architecture](#wegro-agriculture-analytics-api---architecture)
+  - [Table of Contents](#table-of-contents)
+  - [Architecture Overview](#architecture-overview)
+  - [Architecture Diagram](#architecture-diagram)
+  - [1. External Client Layer](#1-external-client-layer)
+  - [2. Application Entry Layer](#2-application-entry-layer)
+  - [3. Router Layer](#3-router-layer)
+  - [4. Validation \& Schema Layer](#4-validation--schema-layer)
+  - [5. Service Layer](#5-service-layer)
+    - [farm\_reports.py](#farm_reportspy)
+    - [crop\_reports.py](#crop_reportspy)
+    - [market\_reports.py](#market_reportspy)
+  - [6. Shared pandas Utility Layer](#6-shared-pandas-utility-layer)
+  - [7. Data Access Layer](#7-data-access-layer)
+  - [8. Remote MySQL Database Layer](#8-remote-mysql-database-layer)
+  - [9. Request and Response Lifecycle](#9-request-and-response-lifecycle)
+  - [10. Docker Runtime Architecture](#10-docker-runtime-architecture)
+  - [11. Environment Configuration](#11-environment-configuration)
+  - [12. Notebook and EDA Separation](#12-notebook-and-eda-separation)
+  - [13. Error Handling Architecture](#13-error-handling-architecture)
+  - [14. Design Principles](#14-design-principles)
+  - [Architecture Summary](#architecture-summary)
+
+---
 This document explains the backend architecture of the **WeGro Agriculture Analytics API**, built for the WeGro Technologies Limited Associate Data Scientist Technical Assessment.
 
 The system is designed as a clean, layered FastAPI application that connects to a remote MySQL agriculture database, processes data with pandas, and returns validated JSON responses through 8 analytics endpoints.

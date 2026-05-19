@@ -1,5 +1,52 @@
 # Project Reference - WeGro Agriculture Analytics API
 
+---
+
+## Table of Contents
+
+- [Project Reference - WeGro Agriculture Analytics API](#project-reference---wegro-agriculture-analytics-api)
+  - [Table of Contents](#table-of-contents)
+  - [1. Project Identity](#1-project-identity)
+  - [2. What This Project Solves](#2-what-this-project-solves)
+  - [3. Assessment Requirement Mapping](#3-assessment-requirement-mapping)
+  - [4. Final Endpoint Inventory](#4-final-endpoint-inventory)
+  - [5. Implementation Style](#5-implementation-style)
+  - [6. Main Code Areas](#6-main-code-areas)
+    - [API entry point](#api-entry-point)
+    - [Routers](#routers)
+    - [Schemas](#schemas)
+    - [Enums](#enums)
+    - [Services](#services)
+    - [Data access](#data-access)
+  - [7. Engineering Decisions](#7-engineering-decisions)
+    - [Decision 1: Keep routers thin](#decision-1-keep-routers-thin)
+    - [Decision 2: Use enums for filter validation](#decision-2-use-enums-for-filter-validation)
+    - [Decision 3: Use pandas after loading database views](#decision-3-use-pandas-after-loading-database-views)
+    - [Decision 4: Use dimension tables only where required](#decision-4-use-dimension-tables-only-where-required)
+    - [Decision 5: Keep helper functions stateless](#decision-5-keep-helper-functions-stateless)
+    - [Decision 6: Do not fake PRD example values](#decision-6-do-not-fake-prd-example-values)
+  - [8. Important Data Interpretation Notes](#8-important-data-interpretation-notes)
+    - [Season has two meanings](#season-has-two-meanings)
+    - [Market district must come from dim\_market](#market-district-must-come-from-dim_market)
+    - [crop\_name and crop\_category are different](#crop_name-and-crop_category-are-different)
+  - [9. Endpoint Implementation Notes](#9-endpoint-implementation-notes)
+    - [/farms/summary](#farmssummary)
+    - [/farms/{farm\_id}/performance](#farmsfarm_idperformance)
+    - [/farms/top](#farmstop)
+    - [/farms/loss-analysis](#farmsloss-analysis)
+    - [/crops/yield-efficiency](#cropsyield-efficiency)
+    - [/crops/seasonal-trend](#cropsseasonal-trend)
+    - [/markets/price-comparison](#marketsprice-comparison)
+    - [/crops/quality-breakdown](#cropsquality-breakdown)
+  - [10. Testing Evidence](#10-testing-evidence)
+  - [11. Docker Verification](#11-docker-verification)
+  - [12. Documentation Strategy](#12-documentation-strategy)
+  - [13. Recruiter Review Path](#13-recruiter-review-path)
+  - [14. Known Safe Assumptions](#14-known-safe-assumptions)
+  - [15. Final Confidence Summary](#15-final-confidence-summary)
+  
+---
+
 This document is the internal technical reference for the WeGro Agriculture Analytics API.
 
 It explains what was built, why key implementation decisions were made, how the project satisfies the assessment requirements, and how the final system should be reviewed by an evaluator.
